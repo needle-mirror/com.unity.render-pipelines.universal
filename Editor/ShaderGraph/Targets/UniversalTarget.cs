@@ -149,6 +149,11 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
             return isUniversalRenderPipeline && activeSubTarget.IsActive();
         }
 
+        public override bool IsNodeAllowedByTarget(Type nodeType)
+        {
+            SRPFilterAttribute srpFilter = NodeClassCache.GetAttributeOnNodeType<SRPFilterAttribute>(nodeType);
+            return srpFilter == null || srpFilter.srpTypes.Contains(typeof(UniversalRenderPipeline));
+        }
         public override void Setup(ref TargetSetupContext context)
         {
             // Setup the Target
@@ -320,7 +325,7 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
 
             // Template
             passTemplatePath = GenerationUtils.GetDefaultTemplatePath("PassMesh.template"),
-            sharedTemplateDirectory = GenerationUtils.GetDefaultSharedTemplateDirectory(),
+            sharedTemplateDirectories = GenerationUtils.GetDefaultSharedTemplateDirectories(),
 
             // Port Mask
             validVertexBlocks = CoreBlockMasks.Vertex,
@@ -345,7 +350,7 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
 
             // Template
             passTemplatePath = GenerationUtils.GetDefaultTemplatePath("PassMesh.template"),
-            sharedTemplateDirectory = GenerationUtils.GetDefaultSharedTemplateDirectory(),
+            sharedTemplateDirectories = GenerationUtils.GetDefaultSharedTemplateDirectories(),
 
             // Port Mask
             validVertexBlocks = CoreBlockMasks.Vertex,
@@ -494,6 +499,19 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
             { RenderState.Blend(Blend.One, Blend.One, Blend.One, Blend.One), new FieldCondition(Fields.BlendAdd, true) },
             { RenderState.Blend(Blend.DstColor, Blend.Zero), new FieldCondition(Fields.BlendMultiply, true) },
         };
+
+        public static readonly RenderStateCollection DepthNormalsOnly = new RenderStateCollection
+        {
+            { RenderState.ZTest(ZTest.LEqual) },
+            { RenderState.ZWrite(ZWrite.On) },
+            { RenderState.Cull(Cull.Back), new FieldCondition(Fields.DoubleSided, false) },
+            { RenderState.Cull(Cull.Off), new FieldCondition(Fields.DoubleSided, true) },
+            { RenderState.Blend(Blend.One, Blend.Zero), new FieldCondition(Fields.SurfaceOpaque, true) },
+            { RenderState.Blend(Blend.SrcAlpha, Blend.OneMinusSrcAlpha, Blend.One, Blend.OneMinusSrcAlpha), new FieldCondition(Fields.BlendAlpha, true) },
+            { RenderState.Blend(Blend.One, Blend.OneMinusSrcAlpha, Blend.One, Blend.OneMinusSrcAlpha), new FieldCondition(Fields.BlendPremultiply, true) },
+            { RenderState.Blend(Blend.One, Blend.One, Blend.One, Blend.One), new FieldCondition(Fields.BlendAdd, true) },
+            { RenderState.Blend(Blend.DstColor, Blend.Zero), new FieldCondition(Fields.BlendMultiply, true) },
+        };
     }
 #endregion
 
@@ -503,8 +521,7 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
         public static readonly PragmaCollection Default = new PragmaCollection
         {
             { Pragma.Target(ShaderModel.Target20) },
-            { Pragma.OnlyRenderers(new[]{ Platform.GLES, Platform.GLES3 }) },
-            { Pragma.PreferHlslCC(new[]{ Platform.GLES }) },
+            { Pragma.OnlyRenderers(new[]{ Platform.GLES, Platform.GLES3, Platform.GLCore }) },
             { Pragma.Vertex("vert") },
             { Pragma.Fragment("frag") },
         };
@@ -512,9 +529,8 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
         public static readonly PragmaCollection Instanced = new PragmaCollection
         {
             { Pragma.Target(ShaderModel.Target20) },
-            { Pragma.OnlyRenderers(new[]{ Platform.GLES, Platform.GLES3 }) },
+            { Pragma.OnlyRenderers(new[]{ Platform.GLES, Platform.GLES3, Platform.GLCore }) },
             { Pragma.MultiCompileInstancing },
-            { Pragma.PreferHlslCC(new[]{ Platform.GLES }) },
             { Pragma.Vertex("vert") },
             { Pragma.Fragment("frag") },
         };
@@ -522,10 +538,9 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
         public static readonly PragmaCollection Forward = new PragmaCollection
         {
             { Pragma.Target(ShaderModel.Target20) },
-            { Pragma.OnlyRenderers(new[]{ Platform.GLES, Platform.GLES3 }) },
+            { Pragma.OnlyRenderers(new[]{ Platform.GLES, Platform.GLES3, Platform.GLCore }) },
             { Pragma.MultiCompileInstancing },
             { Pragma.MultiCompileFog },
-            { Pragma.PreferHlslCC(new[]{ Platform.GLES }) },
             { Pragma.Vertex("vert") },
             { Pragma.Fragment("frag") },
         };
@@ -533,10 +548,9 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
         public static readonly PragmaCollection GBuffer = new PragmaCollection
         {
             { Pragma.Target(ShaderModel.Target20) },
-            { Pragma.OnlyRenderers(new[]{ Platform.GLES, Platform.GLES3 }) },
+            { Pragma.OnlyRenderers(new[]{ Platform.GLES, Platform.GLES3, Platform.GLCore }) },
             { Pragma.MultiCompileInstancing },
             { Pragma.MultiCompileFog },
-            { Pragma.PreferHlslCC(new[]{ Platform.GLES }) },
             { Pragma.Vertex("vert") },
             { Pragma.Fragment("frag") },
         };
@@ -545,7 +559,6 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
         {
             { Pragma.Target(ShaderModel.Target20) },
             { Pragma.ExcludeRenderers(new[]{ Platform.D3D9 }) },
-            { Pragma.PreferHlslCC(new[]{ Platform.GLES }) },
             { Pragma.Vertex("vert") },
             { Pragma.Fragment("frag") },
         };
@@ -602,6 +615,7 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
         const string kVaryings = "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/Varyings.hlsl";
         const string kShaderPass = "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl";
         const string kDepthOnlyPass = "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/DepthOnlyPass.hlsl";
+        const string kDepthNormalsOnlyPass = "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/DepthNormalsOnlyPass.hlsl";
         const string kShadowCasterPass = "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShadowCasterPass.hlsl";
         const string kTextureStack = "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl";
 
@@ -633,6 +647,17 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
             // Post-graph
             { CorePostgraph },
             { kDepthOnlyPass, IncludeLocation.Postgraph },
+        };
+
+        public static IncludeCollection DepthNormalsOnly = new IncludeCollection
+        {
+            // Pre-graph
+            { CorePregraph },
+            { ShaderGraphPregraph },
+
+            // Post-graph
+            { CorePostgraph },
+            { kDepthNormalsOnlyPass, IncludeLocation.Postgraph },
         };
 
         public static IncludeCollection ShadowCaster = new IncludeCollection
@@ -754,15 +779,6 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
             referenceName = "_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A",
             type = KeywordType.Boolean,
             definition = KeywordDefinition.ShaderFeature,
-            scope = KeywordScope.Global,
-        };
-
-        public static KeywordDescriptor ETCExternalAlpha = new KeywordDescriptor()
-        {
-            displayName = "ETC External Alpha",
-            referenceName = "ETC1_EXTERNAL_ALPHA",
-            type = KeywordType.Boolean,
-            definition = KeywordDefinition.MultiCompile,
             scope = KeywordScope.Global,
         };
 

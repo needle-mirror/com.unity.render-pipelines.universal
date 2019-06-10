@@ -1,8 +1,3 @@
-#if ETC1_EXTERNAL_ALPHA
-    TEXTURE2D(_AlphaTex); SAMPLER(sampler_AlphaTex);
-    half _EnableAlphaTexture;
-#endif
-
 #if USE_SHAPE_LIGHT_TYPE_0
 SHAPE_LIGHT(0)
 #endif
@@ -42,11 +37,6 @@ half4 frag(PackedVaryings packedInput) : SV_TARGET
     half4 color = surfaceDescription.SpriteColor;
 #else
     half4 color = half4(surfaceDescription.BaseColor, surfaceDescription.Alpha);
-#endif
-
-#if ETC1_EXTERNAL_ALPHA
-    half4 alpha = SAMPLE_TEXTURE2D(_AlphaTex, sampler_AlphaTex, unpacked.texCoord0.xy);
-    color.a = lerp (color.a, alpha.r, _EnableAlphaTexture);
 #endif
 
     color *= unpacked.color;

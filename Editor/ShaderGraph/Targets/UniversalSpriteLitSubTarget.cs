@@ -35,6 +35,7 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
             // Surface Type & Blend Mode
             context.AddField(Fields.SurfaceTransparent);
             context.AddField(Fields.BlendAlpha);
+            context.AddField(Fields.DoubleSided);
         }
 
         public override void GetActiveBlocks(ref TargetActiveBlockContext context)
@@ -104,7 +105,7 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
 
                 // Template
                 passTemplatePath = GenerationUtils.GetDefaultTemplatePath("PassMesh.template"),
-                sharedTemplateDirectory = GenerationUtils.GetDefaultSharedTemplateDirectory(),
+                sharedTemplateDirectories = GenerationUtils.GetDefaultSharedTemplateDirectories(),
 
                 // Port Mask
                 validVertexBlocks = CoreBlockMasks.Vertex,
@@ -132,7 +133,7 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
 
                 // Template
                 passTemplatePath = GenerationUtils.GetDefaultTemplatePath("PassMesh.template"),
-                sharedTemplateDirectory = GenerationUtils.GetDefaultSharedTemplateDirectory(),
+                sharedTemplateDirectories = GenerationUtils.GetDefaultSharedTemplateDirectories(),
 
                 // Port Mask
                 validVertexBlocks = CoreBlockMasks.Vertex,
@@ -159,7 +160,7 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
 
                 // Template
                 passTemplatePath = GenerationUtils.GetDefaultTemplatePath("PassMesh.template"),
-                sharedTemplateDirectory = GenerationUtils.GetDefaultSharedTemplateDirectory(),
+                sharedTemplateDirectories = GenerationUtils.GetDefaultSharedTemplateDirectories(),
 
                 // Port Mask
                 validVertexBlocks = CoreBlockMasks.Vertex,
@@ -173,7 +174,6 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
                 // Conditional State
                 renderStates = CoreRenderStates.Default,
                 pragmas = CorePragmas._2DDefault,
-                keywords = SpriteLitKeywords.ETCExternalAlpha,
                 includes = SpriteLitIncludes.Forward,
             };
         }
@@ -229,16 +229,10 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
         {
             public static KeywordCollection Lit = new KeywordCollection
             {
-                { CoreKeywordDescriptors.ETCExternalAlpha },
                 { CoreKeywordDescriptors.ShapeLightType0 },
                 { CoreKeywordDescriptors.ShapeLightType1 },
                 { CoreKeywordDescriptors.ShapeLightType2 },
                 { CoreKeywordDescriptors.ShapeLightType3 },
-            };
-
-            public static KeywordCollection ETCExternalAlpha = new KeywordCollection
-            {
-                { CoreKeywordDescriptors.ETCExternalAlpha },
             };
         }
 #endregion
