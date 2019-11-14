@@ -4,6 +4,48 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [7.1.5] - 2019-11-15
+
+- Fixed multiple issues where Shader Graph shaders failed to build for XR in the Universal RP.
+- Fixed conflicting meta with HDRP
+
+## [7.1.4] - 2019-11-13
+
+### Fixed
+- Terrain Holes fixes
+- Fixed post-processing with XR single-pass rendering modes.
+
+## [7.1.3] - 2019-11-04
+### Added
+- Added default implementations of OnPreprocessMaterialDescription for FBX, Obj, Sketchup and 3DS file formats.
+
+### Changed
+- Moved the icon that indicates the type of a Light 2D from the Inspector header to the Light Type field.
+- Eliminated some GC allocations from the 2D Renderer.
+- Deprecated the CinemachineUniversalPixelPerfect extension. Use the one from Cinemachine v2.4 instead.
+
+### Fixed
+- Fixed an issue where linear to sRGB conversion occurred twice on certain Android devices.
+- Fixed an issue where Unity rendered fullscreen quads with the pink error shader when you enabled the Stop NaN post-processing pass.
+- Fixed an issue where 2D Lighting was broken for Perspective Cameras.
+- Fixed an issue where resetting a Freeform 2D Light would throw null reference exceptions. [case 1184536](https://issuetracker.unity3d.com/issues/lwrp-changing-light-type-to-freeform-after-clicking-on-reset-throws-multiple-arguementoutofrangeexception)
+- Fixed an issue where Freeform 2D Lights were not culled correctly when there was a Falloff Offset.
+- Fixed an issue where Tilemap palettes were invisible in the Tile Palette window when the 2D Renderer was in use. [case 1162550](https://issuetracker.unity3d.com/issues/adding-tiles-in-the-tile-palette-makes-the-tiles-invisible)
+- Fixed user LUT sampling being done in Linear instead of sRGB.
+- Fixed an issue when trying to get the Renderer via API on the first frame [case 1189196](https://issuetracker.unity3d.com/product/unity/issues/guid/1189196/)
+- Fixed an issue where deleting an entry from the Renderer List and then undoing that change could cause a null reference. [case 1191896](https://issuetracker.unity3d.com/issues/nullreferenceexception-when-attempting-to-remove-entry-from-renderer-features-list-after-it-has-been-removed-and-then-undone)
+- Fixed an issue where the user would get an error if they removed the Additional Camera Data component. [case 1189926](https://issuetracker.unity3d.com/issues/unable-to-remove-universal-slash-hd-additional-camera-data-component-serializedobject-target-destroyed-error-is-thrown)
+- Fixed an issue that caused shaders containing `HDRP` string in their path to be stripped from the build.
+- Fixed an issue that caused only selected object to render in SceneView when Wireframe drawmode was selected.
+- Fixed Renderer Features UI tooltips. [case 1191901](https://issuetracker.unity3d.com/issues/forward-renderers-render-objects-layer-mask-tooltip-is-incorrect-and-contains-a-typo)
+- Fixed an issue where the Scene lighting button didn't work when you used the 2D Renderer.
+- Fixed a performance regression when you used the 2D Renderer.
+- Fixed an issue where the Freeform 2D Light gizmo didn't correctly show the Falloff offset.
+- Fixed an issue where the 2D Renderer rendered nothing when you used shadow-casting lights with incompatible Renderer2DData.
+- Fixed an issue where Prefab previews were incorrectly lit when you used the 2D Renderer.
+- Fixed an issue where the Light didn't update correctly when you deleted a Sprite that a Sprite 2D Light uses.
+- Fixed an issue where Cinemachine v2.4 couldn't be used together with Universal RP due to a circular dependency between the two packages.
+
 ## [7.1.2] - 2019-09-19
 ### Added
 - Added support for additional Directional Lights. The amount of additional Directional Lights is limited by the maximum Per-object Lights in the Render Pipeline Asset.
@@ -14,6 +56,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed Unlit and BakedLit shader compilations in the meta pass.
 - Fixed an issue where the Bokeh Depth of Field shader would fail to compile on PS4.
 - Improved overall memory bandwidth usage.
+- Added SceneSelection pass for TerrainLit shader.
 
 ## [7.1.1] - 2019-09-05
 ### Upgrade Guide

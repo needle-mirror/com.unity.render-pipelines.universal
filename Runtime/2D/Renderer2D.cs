@@ -44,7 +44,8 @@ namespace UnityEngine.Experimental.Rendering.Universal
         {
             ref CameraData cameraData = ref renderingData.cameraData;
             ref var cameraTargetDescriptor = ref cameraData.cameraTargetDescriptor;
-            PixelPerfectCamera ppc = cameraData.camera.GetComponent<PixelPerfectCamera>();
+            PixelPerfectCamera ppc;
+            cameraData.camera.TryGetComponent<PixelPerfectCamera>(out ppc);
 
             Vector2Int ppcOffscreenRTSize = ppc != null ? ppc.offscreenRTSize : Vector2Int.zero;
             bool ppcUsesOffscreenRT = ppcOffscreenRTSize != Vector2Int.zero;
@@ -91,6 +92,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
                         m_AfterPostProcessColorHandle,
                         RenderTargetHandle.CameraTarget,
                         m_ColorGradingLutHandle,
+                        false,
                         false
                     );
                     EnqueuePass(m_PostProcessPass);
@@ -106,7 +108,8 @@ namespace UnityEngine.Experimental.Rendering.Universal
                         m_AfterPostProcessColorHandle,
                         RenderTargetHandle.CameraTarget,
                         m_ColorGradingLutHandle,
-                        true
+                        true,
+                        false
                     );
                     EnqueuePass(m_PostProcessPass);
 
@@ -123,7 +126,8 @@ namespace UnityEngine.Experimental.Rendering.Universal
                         RenderTargetHandle.CameraTarget,
                         RenderTargetHandle.CameraTarget,
                         m_ColorGradingLutHandle,
-                        false
+                        false,
+                        true
                     );
                     EnqueuePass(m_PostProcessPass);
 
