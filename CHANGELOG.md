@@ -4,8 +4,15 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [7.1.6] - 2019-11-22
+
+### Fixed
+- Fixed issue where XR Multiview failed to render when using URP Shader Graph Shaders
+- Fixed lazy initialization with last version of ResourceReloader
+
 ## [7.1.5] - 2019-11-15
 
+### Fixed
 - Fixed multiple issues where Shader Graph shaders failed to build for XR in the Universal RP.
 - Fixed conflicting meta with HDRP
 
@@ -23,6 +30,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Moved the icon that indicates the type of a Light 2D from the Inspector header to the Light Type field.
 - Eliminated some GC allocations from the 2D Renderer.
 - Deprecated the CinemachineUniversalPixelPerfect extension. Use the one from Cinemachine v2.4 instead.
+- Replaced PlayerSettings.virtualRealitySupported with XRGraphics.tryEnable.
 
 ### Fixed
 - Fixed an issue where linear to sRGB conversion occurred twice on certain Android devices.
