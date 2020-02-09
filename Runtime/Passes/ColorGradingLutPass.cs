@@ -58,6 +58,7 @@ namespace UnityEngine.Rendering.Universal.Internal
             m_InternalLut = internalLut;
         }
 
+        /// <inheritdoc/>
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
             var cmd = CommandBufferPool.Get(k_ProfilerTag);
@@ -169,9 +170,16 @@ namespace UnityEngine.Rendering.Universal.Internal
             CommandBufferPool.Release(cmd);
         }
 
-        public override void FrameCleanup(CommandBuffer cmd)
+        /// <inheritdoc/>
+        internal override void OnFinishCameraStackRendering(CommandBuffer cmd)
         {
             cmd.ReleaseTemporaryRT(m_InternalLut.id);
+        }
+
+        /// <inheritdoc/>
+        public override void FrameCleanup(CommandBuffer cmd)
+        {
+
         }
 
         // Precomputed shader ids to same some CPU cycles (mostly affects mobile)

@@ -1,9 +1,27 @@
 * [Universal Render Pipeline](index.md)
+* [Features]()
+  * [Feature Comparison with the Built-in Render Pipeline](universalrp-builtin-feature-comparison.md)
 * [Getting started](InstallingAndConfiguringURP.md)
-  * [Create a Project from a Template](CreateNewProjectFromTemplate.md)
+  * [Create a Project from a Template](creating-a-new-project-with-urp.md)
   * [Install URP into an existing Project](InstallURPIntoAProject.md)
   * [The Universal Render Pipeline Asset](universalrp-asset.md)
+* [Upgrade guides](upgrade-guides.md)
+  * [Upgrade to URP 7.2.0](upgrade-guide-7-2-0.md)
+  * [Upgrade from LWRP to URP](upgrade-lwrp-to-urp.md)
 * [Rendering](rendering-in-universalrp.md)
+* [Lighting](lighting.md)
+  * [Light component reference](light-component)
+  * [The Universal Additional Light Data component](universal-additional-light-data.md)
+* [Cameras](cameras.md)
+  * [The Universal Additional Camera Data component](universal-additional-camera-data.md)
+  * [Render Type](camera-types-and-render-type.md)
+  * [Working with multiple cameras](cameras-multiple.md)
+    * [Camera Stacking](camera-stacking.md)
+    * [Rendering from multiple Cameras to the same render target](rendering-to-the-same-render-target.md)
+    * [Rendering to a Render Texture](rendering-to-a-render-texture.md)
+  * [Clearing, rendering order and overdraw](cameras-advanced.md)
+  * [Camera component reference](camera-component-reference.md)
+
 * [Post-processing](integration-with-post-processing.md)
   * [Volumes](Volumes.md)
     * [Volume Profile](VolumeProfile.md)
@@ -25,6 +43,7 @@
     * [Tonemapping](post-processing-tonemapping.md)
     * [Vignette](post-processing-vignette.md)
     * [White Balance](Post-Processing-White-Balance.md)
+
 * [Shaders and Materials](shaders-in-universalrp.md)
   * [Shading Models](shading-model.md)
   * [Lit](lit-shader.md)
@@ -36,6 +55,7 @@
   * [Particles Unlit](particles-unlit-shader.md)
   * [Upgrading shaders from Built-in](upgrading-your-shaders.md)
   * [Shader stripping](shader-stripping.md)
+
 * [2D](2d-index.md)
   * [Introduction to Lights 2D](Lights-2D-intro.md)
   * [Requirements and setup](Setup.md)
@@ -53,7 +73,9 @@
   * [2D Renderer and Shader Graph](ShaderGraph.md)
   * [2D Pixel Perfect](2d-pixelperfect.md)
     * [Cinemachine Pixel Perfect extension](pixel-cinemachine.md)
-* Consoles
-  * [Building for consoles](Building-For-Consoles.md)
+
+* [Building for consoles](Building-For-Consoles.md)
+  
 * [Frequently asked questions (FAQ)](faq.md)
-* [Feature Comparison with Built-in](universalrp-builtin-feature-comparison.md)
+
+* [Feature comparison with the Built-in Render Pipeline](universalrp-builtin-feature-comparison.md)
