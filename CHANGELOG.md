@@ -4,8 +4,14 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [7.2.0] - 2020-02-10
+## [7.2.1] - 2020-02-14
 
+### Fixed
+- Fixed incorrect light attenuation on Nintendo Switch.
+- Fixed a performance issue in Hololens when using renderer with custom render passes.
+
+
+## [7.2.0] - 2020-02-10
 
 ### Added
 ![Camera Stacking in URP](Documentation~/Images/camera-stacking-example.png)
