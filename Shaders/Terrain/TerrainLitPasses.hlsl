@@ -23,8 +23,8 @@ SAMPLER(sampler_TerrainHolesTexture);
 
 void ClipHoles(float2 uv)
 {
-    float hole = SAMPLE_TEXTURE2D(_TerrainHolesTexture, sampler_TerrainHolesTexture, uv).r;
-    clip(hole == 0.0f ? -1 : 1);
+	float hole = SAMPLE_TEXTURE2D(_TerrainHolesTexture, sampler_TerrainHolesTexture, uv).r;
+	clip(hole == 0.0f ? -1 : 1);
 }
 #endif
 
@@ -388,7 +388,7 @@ struct AttributesLean
     float3 normalOS       : NORMAL;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 #ifdef _ALPHATEST_ON
-    float2 texcoord     : TEXCOORD0;
+	float2 texcoord     : TEXCOORD0;
 #endif
 };
 
@@ -417,20 +417,20 @@ VaryingsLean ShadowPassVertex(AttributesLean v)
     clipPos.z = max(clipPos.z, clipPos.w * UNITY_NEAR_CLIP_VALUE);
 #endif
 
-    o.clipPos = clipPos;
-
+	o.clipPos = clipPos;
+	
 #ifdef _ALPHATEST_ON		
-    o.texcoord = v.texcoord;
-#endif
-
-    return o;
+	o.texcoord = v.texcoord;
+#endif	
+	
+	return o;
 }
 
 half4 ShadowPassFragment(VaryingsLean IN) : SV_TARGET
 {
 #ifdef _ALPHATEST_ON
-    ClipHoles(IN.texcoord);
-#endif
+	ClipHoles(IN.texcoord);
+#endif	
     return 0;
 }
 
@@ -443,15 +443,15 @@ VaryingsLean DepthOnlyVertex(AttributesLean v)
     TerrainInstancing(v.position, v.normalOS);
     o.clipPos = TransformObjectToHClip(v.position.xyz);
 #ifdef _ALPHATEST_ON		
-    o.texcoord = v.texcoord;
+	o.texcoord = v.texcoord;
 #endif	
-    return o;
+	return o;
 }
 
 half4 DepthOnlyFragment(VaryingsLean IN) : SV_TARGET
 {
 #ifdef _ALPHATEST_ON
-    ClipHoles(IN.texcoord);
+	ClipHoles(IN.texcoord);
 #endif
 #ifdef SCENESELECTIONPASS
     // We use depth prepass for scene selection in the editor, this code allow to output the outline correctly

@@ -7,9 +7,6 @@ using UnityEditor.Rendering.Universal;
 #endif
 using UnityEngine.Scripting.APIUpdating;
 using Lightmapping = UnityEngine.Experimental.GlobalIllumination.Lightmapping;
-#if ENABLE_VR && ENABLE_XR_MODULE
-using UnityEngine.XR;
-#endif
 
 namespace UnityEngine.Rendering.LWRP
 {
@@ -41,7 +38,7 @@ namespace UnityEngine.Rendering.Universal
         static internal class PerCameraBuffer
         {
             // TODO: This needs to account for stereo rendering
-            public static int _InvCameraViewProj;
+            public static int unity_MatrixInvVP;
             public static int _ScaledScreenParams;
             public static int _ScreenParams;
             public static int _WorldSpaceCameraPos;
@@ -76,28 +73,13 @@ namespace UnityEngine.Rendering.Universal
         }
 
         // These limits have to match same limits in Input.hlsl
-        const int k_MaxVisibleAdditionalLightsSSBO  = 256;
-        const int k_MaxVisibleAdditionalLightsUBO   = 32;
+        const int k_MaxVisibleAdditionalLightsMobile    = 32;
+        const int k_MaxVisibleAdditionalLightsNonMobile = 256;
         public static int maxVisibleAdditionalLights
         {
             get
             {
-                // There are some performance issues by using SSBO in mobile.
-                // Also some GPUs don't supports SSBO in vertex shader.
-                if (RenderingUtils.useStructuredBuffer)
-                    return k_MaxVisibleAdditionalLightsSSBO;
-
-                // We don't use SSBO in D3D because we can't figure out without adding shader variants if platforms is D3D10.
-                // We don't use SSBO on Nintendo Switch as UBO path is faster.
-                // However here we use same limits as SSBO path.
-                var deviceType = SystemInfo.graphicsDeviceType;
-                if (deviceType == GraphicsDeviceType.Direct3D11 || deviceType == GraphicsDeviceType.Direct3D12 ||
-                    deviceType == GraphicsDeviceType.Switch)
-                    return k_MaxVisibleAdditionalLightsSSBO;
-
-                // We use less limits for mobile as some mobile GPUs have small SP cache for constants
-                // Using more than 32 might cause spilling to main memory.
-                return k_MaxVisibleAdditionalLightsUBO;
+                return (Application.isMobilePlatform) ? k_MaxVisibleAdditionalLightsMobile : k_MaxVisibleAdditionalLightsNonMobile;
             }
         }
 
@@ -105,18 +87,6 @@ namespace UnityEngine.Rendering.Universal
         internal static int maxScriptableRenderers
         {
             get => 8;
-        }
-
-        /// <summary>
-        /// Returns the current render pipeline asset for the current quality setting.
-        /// If no render pipeline asset is assigned in QualitySettings, then returns the one assigned in GraphicsSettings.
-        /// </summary>
-        public static UniversalRenderPipelineAsset asset
-        {
-            get
-            {
-                return GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
-            }
         }
 
         public UniversalRenderPipeline(UniversalRenderPipelineAsset asset)
@@ -132,7 +102,7 @@ namespace UnityEngine.Rendering.Universal
             PerFrameBuffer.unity_DeltaTime = Shader.PropertyToID("unity_DeltaTime");
             PerFrameBuffer._TimeParameters = Shader.PropertyToID("_TimeParameters");
 
-            PerCameraBuffer._InvCameraViewProj = Shader.PropertyToID("_InvCameraViewProj");
+            PerCameraBuffer.unity_MatrixInvVP = Shader.PropertyToID("unity_MatrixInvVP");
             PerCameraBuffer._ScreenParams = Shader.PropertyToID("_ScreenParams");
             PerCameraBuffer._ScaledScreenParams = Shader.PropertyToID("_ScaledScreenParams");
             PerCameraBuffer._WorldSpaceCameraPos = Shader.PropertyToID("_WorldSpaceCameraPos");
@@ -154,6 +124,7 @@ namespace UnityEngine.Rendering.Universal
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
+
             Shader.globalRenderPipeline = "";
             SupportedRenderingFeatures.active = new SupportedRenderingFeatures();
             ShaderData.instance.Dispose();
@@ -165,41 +136,6 @@ namespace UnityEngine.Rendering.Universal
             CameraCaptureBridge.enabled = false;
         }
 
-#if ENABLE_VR && ENABLE_XR_MODULE
-        static List<XRDisplaySubsystem> xrDisplayList = new List<XRDisplaySubsystem>();
-        static bool xrSkipRender = false;
-        internal void SetupXRStates()
-        {
-            SubsystemManager.GetInstances(xrDisplayList);
-
-            if (xrDisplayList.Count > 0)
-            {
-                if (xrDisplayList.Count > 1)
-                    throw new NotImplementedException("Only 1 XR display is supported.");
-
-                XRDisplaySubsystem display = xrDisplayList[0];
-                if(display.GetRenderPassCount() == 0)
-                {
-                    // Disable XR rendering if display contains 0 renderpass
-                    if(!xrSkipRender)
-                    {
-                        xrSkipRender = true;
-                        Debug.Log("XR display is not ready. Skip XR rendering.");
-                    }
-                }
-                else
-                {
-                    // Enable XR rendering if display contains >0 renderpass
-                    if (xrSkipRender)
-                    {
-                        xrSkipRender = false;
-                        Debug.Log("XR display is ready. Start XR rendering.");
-                    }
-                }
-            }
-        }
-#endif
-
         protected override void Render(ScriptableRenderContext renderContext, Camera[] cameras)
         {
             BeginFrameRendering(renderContext, cameras);
@@ -207,11 +143,6 @@ namespace UnityEngine.Rendering.Universal
             GraphicsSettings.lightsUseLinearIntensity = (QualitySettings.activeColorSpace == ColorSpace.Linear);
             GraphicsSettings.useScriptableRenderPipelineBatching = asset.useSRPBatcher;
             SetupPerFrameShaderConstants();
-#if ENABLE_VR && ENABLE_XR_MODULE
-            SetupXRStates();
-            if(xrSkipRender)
-                return;
-#endif
 
             SortCameras(cameras);
             for (int i = 0; i < cameras.Length; ++i)
@@ -338,12 +269,8 @@ namespace UnityEngine.Rendering.Universal
             // rendering to screen when rendering it. The last camera in the stack is not
             // necessarily the last active one as it users might disable it.
             int lastActiveOverlayCameraIndex = -1;
-            if (cameraStack != null && cameraStack.Count > 0)
+            if (cameraStack != null)
             {
-#if POST_PROCESSING_STACK_2_0_0_OR_NEWER
-                if (asset.postProcessingFeatureSet != PostProcessingFeatureSet.PostProcessingV2)
-                {
-#endif
                 // TODO: Add support to camera stack in VR multi pass mode
                 if (!IsMultiPassStereoEnabled(baseCamera))
                 {
@@ -377,13 +304,6 @@ namespace UnityEngine.Rendering.Universal
                 {
                     Debug.LogWarning("Multi pass stereo mode doesn't support Camera Stacking. Overlay cameras will skip rendering.");
                 }
-#if POST_PROCESSING_STACK_2_0_0_OR_NEWER
-                }
-                else
-                {
-                    Debug.LogWarning("Post-processing V2 doesn't support Camera Stacking. Overlay cameras will skip rendering.");
-                }
-#endif
             }
 
 
@@ -503,43 +423,6 @@ namespace UnityEngine.Rendering.Universal
             InitializeAdditionalCameraData(camera, additionalCameraData, ref cameraData);
         }
 
-#if ENABLE_VR && ENABLE_XR_MODULE
-        static List<XR.XRDisplaySubsystem> displaySubsystemList = new List<XR.XRDisplaySubsystem>();
-        static bool CanXRSDKUseSinglePass(Camera camera)
-        {
-            XR.XRDisplaySubsystem display = null;
-            SubsystemManager.GetInstances(displaySubsystemList);
-
-            if (displaySubsystemList.Count > 0)
-            {
-                XR.XRDisplaySubsystem.XRRenderPass renderPass;
-                display = displaySubsystemList[0];
-                if (display.GetRenderPassCount() > 0)
-                {
-                    display.GetRenderPass(0, out renderPass);
-
-                    if (renderPass.renderTargetDesc.dimension != TextureDimension.Tex2DArray)
-                        return false;
-
-                    if (renderPass.GetRenderParameterCount() != 2 || renderPass.renderTargetDesc.volumeDepth != 2)
-                        return false;
-
-                    renderPass.GetRenderParameter(camera, 0, out var renderParam0);
-                    renderPass.GetRenderParameter(camera, 1, out var renderParam1);
-
-                    if (renderParam0.textureArraySlice != 0 || renderParam1.textureArraySlice != 1)
-                        return false;
-
-                    if (renderParam0.viewport != renderParam1.viewport)
-                        return false;
-
-                    return true;
-                }
-            }
-            return false;
-        }
-#endif
-
         /// <summary>
         /// Initialize camera data settings common for all cameras in the stack. Overlay cameras will inherit
         /// settings from base camera.
@@ -558,8 +441,7 @@ namespace UnityEngine.Rendering.Universal
             cameraData.isXRMultipass = false;
 
 #if ENABLE_VR && ENABLE_VR_MODULE
-            if (cameraData.isStereoEnabled && !cameraData.isSceneViewCamera &&
-                !CanXRSDKUseSinglePass(baseCamera) && XR.XRSettings.stereoRenderingMode == XR.XRSettings.StereoRenderingMode.MultiPass)
+            if (cameraData.isStereoEnabled && !cameraData.isSceneViewCamera && XR.XRSettings.stereoRenderingMode == XR.XRSettings.StereoRenderingMode.MultiPass)
             {
                 cameraData.numberOfXRPasses = 2;
                 cameraData.isXRMultipass = true;
@@ -596,7 +478,6 @@ namespace UnityEngine.Rendering.Universal
                 cameraData.antialiasing = AntialiasingMode.None;
                 cameraData.antialiasingQuality = AntialiasingQuality.High;
             }
-
 
             ///////////////////////////////////////////////////////////////////
             // Settings that control output of the camera                     /
@@ -698,23 +579,7 @@ namespace UnityEngine.Rendering.Universal
             // Disables post if GLes2
             cameraData.postProcessEnabled &= SystemInfo.graphicsDeviceType != GraphicsDeviceType.OpenGLES2;
 
-#if POST_PROCESSING_STACK_2_0_0_OR_NEWER
-#pragma warning disable 0618 // Obsolete
-			if (settings.postProcessingFeatureSet == PostProcessingFeatureSet.PostProcessingV2)
-            {
-                camera.TryGetComponent(out cameraData.postProcessLayer);
-                cameraData.postProcessEnabled &= cameraData.postProcessLayer != null && cameraData.postProcessLayer.isActiveAndEnabled;
-            }
-			
-            bool depthRequiredForPostFX = settings.postProcessingFeatureSet == PostProcessingFeatureSet.PostProcessingV2
-                ? cameraData.postProcessEnabled
-                : CheckPostProcessForDepth(cameraData);
-#pragma warning restore 0618
-#else
-            bool depthRequiredForPostFX = CheckPostProcessForDepth(cameraData);
-#endif
-
-            cameraData.requiresDepthTexture |= cameraData.isSceneViewCamera || depthRequiredForPostFX;
+            cameraData.requiresDepthTexture |= cameraData.isSceneViewCamera || CheckPostProcessForDepth(cameraData);
         }
 
         static void InitializeRenderingData(UniversalRenderPipelineAsset settings, ref CameraData cameraData, ref CullingResults cullResults,
@@ -762,9 +627,6 @@ namespace UnityEngine.Rendering.Universal
             bool isOffscreenCamera = cameraData.targetTexture != null && !cameraData.isSceneViewCamera;
             renderingData.resolveFinalTarget = requiresBlitToBackbuffer;
             renderingData.postProcessingEnabled = anyPostProcessingEnabled;
-#pragma warning disable // avoid warning because killAlphaInFinalBlit has attribute Obsolete
-            renderingData.killAlphaInFinalBlit = false;
-#pragma warning restore
         }
 
         static void InitializeShadowData(UniversalRenderPipelineAsset settings, NativeArray<VisibleLight> visibleLights, bool mainLightCastShadows, bool additionalLightsCastShadows, out ShadowData shadowData)
@@ -777,11 +639,7 @@ namespace UnityEngine.Rendering.Universal
                 UniversalAdditionalLightData data = null;
                 if (light != null)
                 {
-#if UNITY_2019_3_OR_NEWER
                     light.gameObject.TryGetComponent(out data);
-#else
-                    data = light.gameObject.GetComponent<UniversalAdditionalLightData>();
-#endif
                 }
 
                 if (data && !data.usePipelineSettings)
@@ -953,7 +811,7 @@ namespace UnityEngine.Rendering.Universal
             Matrix4x4 viewMatrix = camera.worldToCameraMatrix;
             Matrix4x4 viewProjMatrix = projMatrix * viewMatrix;
             Matrix4x4 invViewProjMatrix = Matrix4x4.Inverse(viewProjMatrix);
-            Shader.SetGlobalMatrix(PerCameraBuffer._InvCameraViewProj, invViewProjMatrix);
+            Shader.SetGlobalMatrix(PerCameraBuffer.unity_MatrixInvVP, invViewProjMatrix);
         }
     }
 }
