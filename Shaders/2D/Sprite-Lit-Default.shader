@@ -43,16 +43,14 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit-Default"
                 float3 positionOS   : POSITION;
                 float4 color        : COLOR;
                 float2  uv           : TEXCOORD0;
-                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct Varyings
             {
                 float4  positionCS  : SV_POSITION;
-                half4   color       : COLOR;
+                float4  color       : COLOR;
                 float2	uv          : TEXCOORD0;
-                half2	lightingUV  : TEXCOORD1;
-                UNITY_VERTEX_OUTPUT_STEREO
+                float2	lightingUV  : TEXCOORD1;
             };
 
             #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/LightingUtility.hlsl"
@@ -85,8 +83,6 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit-Default"
             Varyings CombinedShapeLightVertex(Attributes v)
             {
                 Varyings o = (Varyings)0;
-                UNITY_SETUP_INSTANCE_ID(v);
-                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
                 o.positionCS = TransformObjectToHClip(v.positionOS);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
@@ -122,31 +118,27 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit-Default"
                 float4 color		: COLOR;
                 float2 uv			: TEXCOORD0;
                 float4 tangent      : TANGENT;
-                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct Varyings
             {
                 float4  positionCS		: SV_POSITION;
-                half4   color			: COLOR;
+                float4  color			: COLOR;
                 float2	uv				: TEXCOORD0;
-                half3   normalWS		: TEXCOORD1;
-                half3   tangentWS		: TEXCOORD2;
-                half3   bitangentWS		: TEXCOORD3;
-                UNITY_VERTEX_OUTPUT_STEREO
+                float3  normalWS		: TEXCOORD1;
+                float3  tangentWS		: TEXCOORD2;
+                float3  bitangentWS		: TEXCOORD3;
             };
 
             TEXTURE2D(_MainTex);
             SAMPLER(sampler_MainTex);
             TEXTURE2D(_NormalMap);
             SAMPLER(sampler_NormalMap);
-            half4 _NormalMap_ST;  // Is this the right way to do this?
+            float4 _NormalMap_ST;  // Is this the right way to do this?
 
             Varyings NormalsRenderingVertex(Attributes attributes)
             {
                 Varyings o = (Varyings)0;
-                UNITY_SETUP_INSTANCE_ID(attributes);
-                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
                 o.positionCS = TransformObjectToHClip(attributes.positionOS);
                 o.uv = TRANSFORM_TEX(attributes.uv, _NormalMap);
@@ -160,10 +152,10 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit-Default"
 
             #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/NormalsRenderingShared.hlsl"
 
-            half4 NormalsRenderingFragment(Varyings i) : SV_Target
+            float4 NormalsRenderingFragment(Varyings i) : SV_Target
             {
-                half4 mainTex = i.color * SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
-                half3 normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, i.uv));
+                float4 mainTex = i.color * SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
+                float3 normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, i.uv));
                 return NormalsRenderingShared(mainTex, normalTS, i.tangentWS.xyz, i.bitangentWS.xyz, i.normalWS.xyz);
             }
             ENDHLSL
@@ -182,7 +174,6 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit-Default"
                 float3 positionOS   : POSITION;
                 float4 color		: COLOR;
                 float2 uv			: TEXCOORD0;
-                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct Varyings
@@ -190,7 +181,6 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit-Default"
                 float4  positionCS		: SV_POSITION;
                 float4  color			: COLOR;
                 float2	uv				: TEXCOORD0;
-                UNITY_VERTEX_OUTPUT_STEREO
             };
 
             TEXTURE2D(_MainTex);
@@ -200,8 +190,6 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit-Default"
             Varyings UnlitVertex(Attributes attributes)
             {
                 Varyings o = (Varyings)0;
-                UNITY_SETUP_INSTANCE_ID(attributes);
-                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
                 o.positionCS = TransformObjectToHClip(attributes.positionOS);
                 o.uv = TRANSFORM_TEX(attributes.uv, _MainTex);

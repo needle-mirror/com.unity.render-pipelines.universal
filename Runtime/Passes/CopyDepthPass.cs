@@ -4,7 +4,7 @@ namespace UnityEngine.Rendering.Universal.Internal
 {
     /// <summary>
     /// Copy the given depth buffer into the given destination depth buffer.
-    ///
+    /// 
     /// You can use this pass to copy a depth buffer to a destination,
     /// so you can use it later in rendering. If the source texture has MSAA
     /// enabled, the pass uses a custom MSAA resolve. If the source texture
@@ -15,7 +15,6 @@ namespace UnityEngine.Rendering.Universal.Internal
     {
         private RenderTargetHandle source { get; set; }
         private RenderTargetHandle destination { get; set; }
-        internal bool AllocateRT  { get; set; }
         Material m_CopyDepthMaterial;
         const string m_ProfilerTag = "Copy Depth";
 
@@ -23,7 +22,6 @@ namespace UnityEngine.Rendering.Universal.Internal
 
         public CopyDepthPass(RenderPassEvent evt, Material copyDepthMaterial)
         {
-            AllocateRT = true;
             m_CopyDepthMaterial = copyDepthMaterial;
             renderPassEvent = evt;
         }
@@ -39,18 +37,15 @@ namespace UnityEngine.Rendering.Universal.Internal
             this.destination = destination;
         }
 
-        public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
+        public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
         {
-            var descriptor = renderingData.cameraData.cameraTargetDescriptor;
+            var descriptor = cameraTextureDescriptor;
             descriptor.colorFormat = RenderTextureFormat.Depth;
             descriptor.depthBufferBits = 32; //TODO: do we really need this. double check;
             descriptor.msaaSamples = 1;
-            if (this.AllocateRT)
-                cmd.GetTemporaryRT(destination.id, descriptor, FilterMode.Point);
+            cmd.GetTemporaryRT(destination.id, descriptor, FilterMode.Point);
 
-            // On Metal iOS, prevent camera attachments to be bound and cleared during this pass.
             ConfigureTarget(destination.Identifier());
-            ConfigureClear(ClearFlag.None, Color.black);
         }
 
         /// <inheritdoc/>
@@ -70,7 +65,7 @@ namespace UnityEngine.Rendering.Universal.Internal
             int cameraSamples = descriptor.msaaSamples;
 
             CameraData cameraData = renderingData.cameraData;
-
+            
             switch (cameraSamples)
             {
                 case 8:
@@ -120,13 +115,12 @@ namespace UnityEngine.Rendering.Universal.Internal
         }
 
         /// <inheritdoc/>
-        public override void OnCameraCleanup(CommandBuffer cmd)
+        public override void FrameCleanup(CommandBuffer cmd)
         {
             if (cmd == null)
                 throw new ArgumentNullException("cmd");
 
-            if (this.AllocateRT)
-                cmd.ReleaseTemporaryRT(destination.id);
+            cmd.ReleaseTemporaryRT(destination.id);
             destination = RenderTargetHandle.CameraTarget;
         }
     }

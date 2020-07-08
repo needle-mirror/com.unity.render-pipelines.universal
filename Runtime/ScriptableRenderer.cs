@@ -34,11 +34,6 @@ namespace UnityEngine.Rendering.Universal
             /// <seealso cref="UniversalAdditionalCameraData.cameraStack"/>
             /// </summary>
             public bool cameraStacking { get; set; } = false;
-
-            /// <summary>
-            /// This setting controls if the Universal Render Pipeline asset should expose MSAA option.
-            /// </summary>
-            public bool msaa { get; set; } = true;
         }
 
         /// <summary>
@@ -162,12 +157,12 @@ namespace UnityEngine.Rendering.Universal
             Vector4 cosTimeVector = new Vector4(Mathf.Cos(timeEights), Mathf.Cos(timeFourth), Mathf.Cos(timeHalf), Mathf.Cos(time));
             Vector4 deltaTimeVector = new Vector4(deltaTime, 1f / deltaTime, smoothDeltaTime, 1f / smoothDeltaTime);
             Vector4 timeParametersVector = new Vector4(time, Mathf.Sin(time), Mathf.Cos(time), 0.0f);
-
-            cmd.SetGlobalVector(ShaderPropertyId.time, timeVector);
-            cmd.SetGlobalVector(ShaderPropertyId.sinTime, sinTimeVector);
-            cmd.SetGlobalVector(ShaderPropertyId.cosTime, cosTimeVector);
-            cmd.SetGlobalVector(ShaderPropertyId.deltaTime, deltaTimeVector);
-            cmd.SetGlobalVector(ShaderPropertyId.timeParameters, timeParametersVector);
+    
+            cmd.SetGlobalVector(UniversalRenderPipeline.PerFrameBuffer._Time, timeVector);
+            cmd.SetGlobalVector(UniversalRenderPipeline.PerFrameBuffer._SinTime, sinTimeVector);
+            cmd.SetGlobalVector(UniversalRenderPipeline.PerFrameBuffer._CosTime, cosTimeVector);
+            cmd.SetGlobalVector(UniversalRenderPipeline.PerFrameBuffer.unity_DeltaTime, deltaTimeVector);
+            cmd.SetGlobalVector(UniversalRenderPipeline.PerFrameBuffer._TimeParameters, timeParametersVector);        
         }
 
         public RenderTargetIdentifier cameraColorTarget
@@ -341,7 +336,6 @@ namespace UnityEngine.Rendering.Universal
             bool stereoEnabled = cameraData.isStereoEnabled;
 
             CommandBuffer cmd = CommandBufferPool.Get(k_SetCameraRenderStateTag);
-            InternalStartRendering(context, ref renderingData);
 
             // Cache the time for after the call to `SetupCameraProperties` and set the time variables in shader
             // For now we set the time variables per camera, as we plan to remove `SetupCameraProperties`.
@@ -354,17 +348,17 @@ namespace UnityEngine.Rendering.Universal
 #endif
             float deltaTime = Time.deltaTime;
             float smoothDeltaTime = Time.smoothDeltaTime;
-
+            
             // Initialize Camera Render State
             ClearRenderingState(cmd);
             SetPerCameraShaderVariables(cmd, ref cameraData);
             SetShaderTimeValues(cmd, time, deltaTime, smoothDeltaTime);
             context.ExecuteCommandBuffer(cmd);
             cmd.Clear();
-
+            
             // Sort the render pass queue
             SortStable(m_ActiveRenderPassQueue);
-
+            
             // Upper limits for each block. Each block will contains render passes with events below the limit.
             NativeArray<RenderPassEvent> blockEventLimits = new NativeArray<RenderPassEvent>(k_RenderPassBlockCount, Allocator.Temp);
             blockEventLimits[RenderPassBlock.BeforeRendering] = RenderPassEvent.BeforeRenderingPrepasses;
@@ -856,23 +850,12 @@ namespace UnityEngine.Rendering.Universal
             blockRanges[currRangeIndex] = m_ActiveRenderPassQueue.Count;
         }
 
-        void InternalStartRendering(ScriptableRenderContext context, ref RenderingData renderingData)
-        {
-            CommandBuffer cmd = CommandBufferPool.Get(k_ReleaseResourcesTag);
-            for (int i = 0; i < m_ActiveRenderPassQueue.Count; ++i)
-            {
-                m_ActiveRenderPassQueue[i].OnCameraSetup(cmd, ref renderingData);
-            }
-            context.ExecuteCommandBuffer(cmd);
-            CommandBufferPool.Release(cmd);
-        }
-
         void InternalFinishRendering(ScriptableRenderContext context, bool resolveFinalTarget)
         {
             CommandBuffer cmd = CommandBufferPool.Get(k_ReleaseResourcesTag);
 
             for (int i = 0; i < m_ActiveRenderPassQueue.Count; ++i)
-                m_ActiveRenderPassQueue[i].OnCameraCleanup(cmd);
+                m_ActiveRenderPassQueue[i].FrameCleanup(cmd);
 
             // Happens when rendering the last camera in the camera stack.
             if (resolveFinalTarget)
@@ -900,32 +883,6 @@ namespace UnityEngine.Rendering.Universal
 
                 list[j + 1] = curr;
             }
-        }
-
-        internal void SetupBackbufferFormat(int msaaSamples, bool stereo)
-        {
-#if ENABLE_VR && ENABLE_VR_MODULE
-            if (!stereo)
-                return;
-            
-            bool msaaSampleCountHasChanged = false;
-            int currentQualitySettingsSampleCount = QualitySettings.antiAliasing;
-            if (currentQualitySettingsSampleCount != msaaSamples &&
-                !(currentQualitySettingsSampleCount == 0 && msaaSamples == 1))
-            {
-                msaaSampleCountHasChanged = true;
-            }
-
-            // There's no exposed API to control how a backbuffer is created with MSAA
-            // By settings antiAliasing we match what the amount of samples in camera data with backbuffer
-            // We only do this for the main camera and this only takes effect in the beginning of next frame.
-            // This settings should not be changed on a frame basis so that's fine.
-            if (msaaSampleCountHasChanged)
-            {
-                QualitySettings.antiAliasing = msaaSamples;
-                XR.XRDevice.UpdateEyeTextureMSAASetting();
-            }  
-#endif
         }
     }
 }
