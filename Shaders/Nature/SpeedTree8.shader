@@ -51,8 +51,7 @@ Shader "Universal Render Pipeline/Nature/SpeedTree8"
             #pragma vertex SpeedTree8Vert
             #pragma fragment SpeedTree8Frag
 
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             #pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS
             #pragma multi_compile _ _SHADOWS_SOFT
@@ -67,7 +66,7 @@ Shader "Universal Render Pipeline/Nature/SpeedTree8"
             #pragma shader_feature_local _WINDQUALITY_NONE _WINDQUALITY_FASTEST _WINDQUALITY_FAST _WINDQUALITY_BETTER _WINDQUALITY_BEST _WINDQUALITY_PALM
             #pragma shader_feature_local EFFECT_BILLBOARD
             #pragma shader_feature_local EFFECT_HUE_VARIATION
-            #pragma shader_feature_local EFFECT_SUBSURFACE
+            //#pragma shader_feature_local EFFECT_SUBSURFACE // GI dependent.
             #pragma shader_feature_local EFFECT_BUMP
             #pragma shader_feature_local EFFECT_EXTRA_TEX
 
@@ -118,8 +117,7 @@ Shader "Universal Render Pipeline/Nature/SpeedTree8"
             #pragma vertex SpeedTree8Vert
             #pragma fragment SpeedTree8Frag
 
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             //#pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             //#pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS
             #pragma multi_compile _ _SHADOWS_SOFT
@@ -133,7 +131,7 @@ Shader "Universal Render Pipeline/Nature/SpeedTree8"
             #pragma shader_feature_local _WINDQUALITY_NONE _WINDQUALITY_FASTEST _WINDQUALITY_FAST _WINDQUALITY_BETTER _WINDQUALITY_BEST _WINDQUALITY_PALM
             #pragma shader_feature_local EFFECT_BILLBOARD
             #pragma shader_feature_local EFFECT_HUE_VARIATION
-            #pragma shader_feature_local EFFECT_SUBSURFACE
+            //#pragma shader_feature_local EFFECT_SUBSURFACE // GI dependent.
             #pragma shader_feature_local EFFECT_BUMP
             #pragma shader_feature_local EFFECT_EXTRA_TEX
 
@@ -170,6 +168,12 @@ Shader "Universal Render Pipeline/Nature/SpeedTree8"
             #define ENABLE_WIND
             #define DEPTH_ONLY
             #define SHADOW_CASTER
+
+            // -------------------------------------
+            // Universal Pipeline keywords
+
+            // This is used during shadow map generation to differentiate between directional and punctual light shadows, as they use different formulas to apply Normal Bias
+            #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
 
             #include "SpeedTree8Input.hlsl"
             #include "SpeedTree8Passes.hlsl"

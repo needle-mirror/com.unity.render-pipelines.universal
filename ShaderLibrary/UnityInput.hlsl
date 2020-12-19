@@ -119,6 +119,7 @@ real4 unity_SpecCube0_HDR;
 
 // Lightmap block feature
 float4 unity_LightmapST;
+float4 unity_LightmapIndex;
 float4 unity_DynamicLightmapST;
 
 // SH block feature

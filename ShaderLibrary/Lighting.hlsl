@@ -156,7 +156,7 @@ Light GetAdditionalPerObjectLight(int perObjectLightIndex, float3 positionWS)
     Light light;
     light.direction = lightDirection;
     light.distanceAttenuation = attenuation;
-    light.shadowAttenuation = 1.0;
+    light.shadowAttenuation = 1.0; // This value can later be overridden in GetAdditionalLight(uint i, float3 positionWS, half4 shadowMask)
     light.color = color;
 
     return light;
@@ -232,7 +232,7 @@ Light GetAdditionalLight(uint i, float3 positionWS, half4 shadowMask)
 #else
     half4 occlusionProbeChannels = _AdditionalLightsOcclusionProbes[perObjectLightIndex];
 #endif
-    light.shadowAttenuation = AdditionalLightShadow(perObjectLightIndex, positionWS, shadowMask, occlusionProbeChannels);
+    light.shadowAttenuation = AdditionalLightShadow(perObjectLightIndex, positionWS, light.direction, shadowMask, occlusionProbeChannels);
 
     return light;
 }
@@ -592,7 +592,8 @@ half3 GlossyEnvironmentReflection(half3 reflectVector, half perceptualRoughness,
     half mip = PerceptualRoughnessToMipmapLevel(perceptualRoughness);
     half4 encodedIrradiance = SAMPLE_TEXTURECUBE_LOD(unity_SpecCube0, samplerunity_SpecCube0, reflectVector, mip);
 
-#if defined(UNITY_USE_NATIVE_HDR)
+//TODO:DOTS - we need to port probes to live in c# so we can manage this manually.
+#if defined(UNITY_USE_NATIVE_HDR) || defined(UNITY_DOTS_INSTANCING_ENABLED)
     half3 irradiance = encodedIrradiance.rgb;
 #else
     half3 irradiance = DecodeHDREnvironment(encodedIrradiance, unity_SpecCube0_HDR);

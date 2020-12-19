@@ -289,7 +289,14 @@ SpeedTreeVertexDepthOutput SpeedTree8VertDepth(SpeedTreeVertexInput input)
 
 #ifdef SHADOW_CASTER
     half3 normalWS = TransformObjectToWorldNormal(input.normal);
-    float4 positionCS = TransformWorldToHClip(ApplyShadowBias(vertexInput.positionWS, normalWS, _LightDirection));
+
+#if _CASTING_PUNCTUAL_LIGHT_SHADOW
+    float3 lightDirectionWS = normalize(_LightPosition - vertexInput.positionWS);
+#else
+    float3 lightDirectionWS = _LightDirection;
+#endif
+
+    float4 positionCS = TransformWorldToHClip(ApplyShadowBias(vertexInput.positionWS, normalWS, lightDirectionWS));
     output.clipPos = positionCS;
 #else
     output.clipPos = vertexInput.positionCS;
@@ -337,7 +344,6 @@ half4 SpeedTree8Frag(SpeedTreeFragmentInput input) : SV_Target
 #endif
 {
     UNITY_SETUP_INSTANCE_ID(input.interpolated);
-    UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input.interpolated);
 
 #if !defined(SHADER_QUALITY_LOW)
     #ifdef LOD_FADE_CROSSFADE // enable dithering LOD transition if user select CrossFade transition in LOD group
@@ -407,23 +413,13 @@ half4 SpeedTree8Frag(SpeedTreeFragmentInput input) : SV_Target
         occlusion = input.interpolated.color.r;
     #endif
 
-    InputData inputData;
-    InitializeInputData(input, normalTs, inputData);
-
     // subsurface (hijack emissive)
     #ifdef EFFECT_SUBSURFACE
-    	Light mainLight = GetMainLight();
-	half fSubsurfaceRough = 0.7 - smoothness * 0.5;
-	half fSubsurface = D_GGX(clamp(-dot(mainLight.direction.xyz, inputData.viewDirectionWS.xyz), 0, 1), fSubsurfaceRough); 
-
-    float4 shadowCoord = TransformWorldToShadowCoord(inputData.positionWS);
-    half realtimeShadow = MainLightRealtimeShadow(shadowCoord);
-	float3 tintedSubsurface = tex2D(_SubsurfaceTex, uv).rgb * _SubsurfaceColor.rgb;
-        float3 directSubsurface = tintedSubsurface.rgb * mainLight.color.rgb * fSubsurface * realtimeShadow; 
-	float3 indirectSubsurface = tintedSubsurface.rgb * inputData.bakedGI.rgb * _SubsurfaceIndirect;
-	emission = directSubsurface + indirectSubsurface;
+        emission = tex2D(_SubsurfaceTex, uv).rgb * _SubsurfaceColor.rgb;
     #endif
 
+    InputData inputData;
+    InitializeInputData(input, normalTs, inputData);
 
 #ifdef GBUFFER
     // in LitForwardPass GlobalIllumination (and temporarily LightingPhysicallyBased) are called inside UniversalFragmentPBR
@@ -431,6 +427,8 @@ half4 SpeedTree8Frag(SpeedTreeFragmentInput input) : SV_Target
     BRDFData brdfData;
     InitializeBRDFData(albedo, metallic, specular, smoothness, alpha, brdfData);
 
+    Light mainLight = GetMainLight(inputData.shadowCoord, inputData.positionWS, inputData.shadowMask);
+    MixRealtimeAndBakedGI(mainLight, inputData.normalWS, inputData.bakedGI, inputData.shadowMask);
     half3 color = GlobalIllumination(brdfData, inputData.bakedGI, occlusion, inputData.normalWS, inputData.viewDirectionWS);
 
     return BRDFDataToGbuffer(brdfData, inputData, smoothness, emission + color);
@@ -448,7 +446,6 @@ half4 SpeedTree8Frag(SpeedTreeFragmentInput input) : SV_Target
 half4 SpeedTree8FragDepth(SpeedTreeVertexDepthOutput input) : SV_Target
 {
     UNITY_SETUP_INSTANCE_ID(input);
-    UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
 
 #if !defined(SHADER_QUALITY_LOW)
     #ifdef LOD_FADE_CROSSFADE // enable dithering LOD transition if user select CrossFade transition in LOD group
@@ -508,7 +505,6 @@ SpeedTreeVertexDepthNormalOutput SpeedTree8VertDepthNormal(SpeedTreeVertexInput 
 half4 SpeedTree8FragDepthNormal(SpeedTreeDepthNormalFragmentInput input) : SV_Target
 {
     UNITY_SETUP_INSTANCE_ID(input.interpolated);
-    UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input.interpolated);
 
     #if !defined(SHADER_QUALITY_LOW)
         #ifdef LOD_FADE_CROSSFADE // enable dithering LOD transition if user select CrossFade transition in LOD group
@@ -524,7 +520,7 @@ half4 SpeedTree8FragDepthNormal(SpeedTreeDepthNormalFragmentInput input) : SV_Ta
     half alpha = diffuse.a * input.interpolated.color.a;
     AlphaDiscard(alpha - 0.3333, 0.0);
 
-    float3 normalWS = NormalizeNormalPerPixel(input.interpolated.normalWS.xyz);
+    float3 normalWS = NormalizeNormalPerPixel(input.interpolated.normalWS);
     return float4(PackNormalOctRectEncode(TransformWorldToViewDir(normalWS, true)), 0.0, 0.0);
 }
 

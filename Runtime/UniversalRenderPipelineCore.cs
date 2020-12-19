@@ -196,6 +196,7 @@ namespace UnityEngine.Rendering.Universal
     [MovedFrom("UnityEngine.Rendering.LWRP")] public struct ShadowData
     {
         public bool supportsMainLightShadows;
+        [Obsolete("Obsolete, this feature was replaced by new 'ScreenSpaceShadows' renderer feature")]
         public bool requiresScreenSpaceShadowResolve;
         public int mainLightShadowmapWidth;
         public int mainLightShadowmapHeight;
@@ -288,12 +289,18 @@ namespace UnityEngine.Rendering.Universal
     {
         public ColorGradingMode gradingMode;
         public int lutSize;
+        /// <summary>
+        /// True if fast approximation functions are used when converting between the sRGB and Linear color spaces, false otherwise.
+        /// </summary>
+        public bool useFastSRGBLinearConversion;
     }
 
     public static class ShaderKeywordStrings
     {
         public static readonly string MainLightShadows = "_MAIN_LIGHT_SHADOWS";
         public static readonly string MainLightShadowCascades = "_MAIN_LIGHT_SHADOWS_CASCADE";
+        public static readonly string MainLightShadowScreen = "_MAIN_LIGHT_SHADOWS_SCREEN";
+        public static readonly string CastingPunctualLightShadow = "_CASTING_PUNCTUAL_LIGHT_SHADOW"; // This is used during shadow map generation to differentiate between directional and punctual light shadows, as they use different formulas to apply Normal Bias
         public static readonly string AdditionalLightsVertex = "_ADDITIONAL_LIGHTS_VERTEX";
         public static readonly string AdditionalLightsPixel = "_ADDITIONAL_LIGHTS";
         public static readonly string AdditionalLightShadows = "_ADDITIONAL_LIGHT_SHADOWS";
@@ -308,6 +315,7 @@ namespace UnityEngine.Rendering.Universal
         public static readonly string DepthMsaa8 = "_DEPTH_MSAA_8";
 
         public static readonly string LinearToSRGBConversion = "_LINEAR_TO_SRGB_CONVERSION";
+        internal static readonly string UseFastSRGBLinearConversion = "_USE_FAST_SRGB_LINEAR_CONVERSION";
 
         public static readonly string SmaaLow = "_SMAA_PRESET_LOW";
         public static readonly string SmaaMedium = "_SMAA_PRESET_MEDIUM";
@@ -340,7 +348,7 @@ namespace UnityEngine.Rendering.Universal
         public static readonly string _POINT = "_POINT";
         public static readonly string _DEFERRED_ADDITIONAL_LIGHT_SHADOWS = "_DEFERRED_ADDITIONAL_LIGHT_SHADOWS";
         public static readonly string _GBUFFER_NORMALS_OCT = "_GBUFFER_NORMALS_OCT";
-        public static readonly string _DEFERRED_SUBTRACTIVE_LIGHTING = "_DEFERRED_SUBTRACTIVE_LIGHTING";
+        public static readonly string _DEFERRED_MIXED_LIGHTING = "_DEFERRED_MIXED_LIGHTING";
         public static readonly string LIGHTMAP_ON = "LIGHTMAP_ON";
         public static readonly string _ALPHATEST_ON = "_ALPHATEST_ON";
         public static readonly string DIRLIGHTMAP_COMBINED = "DIRLIGHTMAP_COMBINED";
@@ -418,42 +426,6 @@ namespace UnityEngine.Rendering.Universal
             return false;
         }
 
-#if ENABLE_VR && ENABLE_VR_MODULE
-        static List<XR.XRDisplaySubsystem> displaySubsystemList = new List<XR.XRDisplaySubsystem>();
-        static XR.XRDisplaySubsystem GetFirstXRDisplaySubsystem()
-        {
-            XR.XRDisplaySubsystem display = null;
-            SubsystemManager.GetInstances(displaySubsystemList);
-
-            if (displaySubsystemList.Count > 0)
-                display = displaySubsystemList[0];
-
-            return display;
-        }
-
-        // NB: This method is required for a hotfix in Hololens to prevent creating a render texture when using a renderer
-        // with custom render pass.
-        // TODO: Remove this method and usages when we have proper dependency tracking in the pipeline to know
-        // when a render pass requires camera color as input.
-        internal static bool IsRunningHololens(CameraData cameraData)
-        {
-#if PLATFORM_WINRT
-            if (cameraData.xr.enabled)
-            {
-                var platform = Application.platform;
-                if (platform == RuntimePlatform.WSAPlayerX86 || platform == RuntimePlatform.WSAPlayerARM || platform == RuntimePlatform.WSAPlayerX64)
-                {
-                    var displaySubsystem = GetFirstXRDisplaySubsystem();
-                    
-                    if (displaySubsystem != null && !displaySubsystem.displayOpaque)
-                        return true;
-                }
-            }
-#endif
-            return false;
-        }
-#endif
-
         Comparison<Camera> cameraComparison = (camera1, camera2) => { return (int)camera1.depth - (int)camera2.depth; };
 #if UNITY_2021_1_OR_NEWER
         void SortCameras(List<Camera> cameras)
@@ -461,16 +433,18 @@ namespace UnityEngine.Rendering.Universal
             if (cameras.Count > 1)
                 cameras.Sort(cameraComparison);
         }
+
 #else
         void SortCameras(Camera[] cameras)
         {
             if (cameras.Length > 1)
                 Array.Sort(cameras, cameraComparison);
         }
+
 #endif
 
         static RenderTextureDescriptor CreateRenderTextureDescriptor(Camera camera, float renderScale,
-            bool isHdrEnabled, int msaaSamples, bool needsAlpha, bool requiresOpaqueTexture)
+            bool isHdrEnabled, int msaaSamples, bool needsAlpha)
         {
             RenderTextureDescriptor desc;
             GraphicsFormat renderTextureFormatDefault = SystemInfo.GetGraphicsFormat(DefaultFormat.LDR);
@@ -500,10 +474,7 @@ namespace UnityEngine.Rendering.Universal
                 desc = camera.targetTexture.descriptor;
                 desc.width = camera.pixelWidth;
                 desc.height = camera.pixelHeight;
-                if (camera.cameraType == CameraType.SceneView  && !isHdrEnabled)
-                {
-                    desc.graphicsFormat = renderTextureFormatDefault;
-                }
+                desc.graphicsFormat = isHdrEnabled ? desc.graphicsFormat : renderTextureFormatDefault;
                 // SystemInfo.SupportsRenderTextureFormat(camera.targetTexture.descriptor.colorFormat)
                 // will assert on R8_SINT since it isn't a valid value of RenderTextureFormat.
                 // If this is fixed then we can implement debug statement to the user explaining why some
@@ -518,12 +489,6 @@ namespace UnityEngine.Rendering.Universal
             // check that the requested MSAA samples count is supported by the current platform. If it's not supported,
             // replace the requested desc.msaaSamples value with the actual value the engine falls back to
             desc.msaaSamples = SystemInfo.GetRenderTextureSupportedMSAASampleCount(desc);
-
-            // if the target platform doesn't support storing multisampled RTs and we are doing a separate opaque pass, using a Load load action on the subsequent passes
-            // will result in loading Resolved data, which on some platforms is discarded, resulting in losing the results of the previous passes.
-            // As a workaround we disable MSAA to make sure that the results of previous passes are stored. (fix for Case 1247423).
-            if (!SystemInfo.supportsStoreAndResolveAction && requiresOpaqueTexture)
-                desc.msaaSamples = 1;
 
             return desc;
         }

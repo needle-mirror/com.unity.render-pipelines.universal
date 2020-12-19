@@ -15,13 +15,5 @@ struct LightData
     float4 occlusionProbeChannels;
 };
 
-// Generated from UnityEngine.Rendering.Universal.ShaderInput+ShadowData
-// PackingRules = Exact
-struct ShadowData
-{
-    float4x4 worldToShadowMatrix;
-    float4 shadowParams;
-};
-
 
 #endif

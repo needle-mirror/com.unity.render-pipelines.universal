@@ -56,8 +56,11 @@ namespace UnityEditor.Rendering.Universal
             public static GUIContent supportsSoftShadows = EditorGUIUtility.TrTextContent("Soft Shadows", "If enabled pipeline will perform shadow filtering. Otherwise all lights that cast shadows will fallback to perform a single shadow sample.");
 
             // Post-processing
+            public static GUIContent postProcessLabel = EditorGUIUtility.TrTextContent("Post Process Data", "The asset containing references to shaders and Textures that the Renderer uses for post-processing.");
+            public static GUIContent postProcessIncluded = EditorGUIUtility.TrTextContent("Post Processing", "Turns post-processing on (check box selected) or off (check box cleared). If you clear this check box, Unity excludes post-processing render Passes, shaders, and textures from the build.");
             public static GUIContent colorGradingMode = EditorGUIUtility.TrTextContent("Grading Mode", "Defines how color grading will be applied. Operators will react differently depending on the mode.");
             public static GUIContent colorGradingLutSize = EditorGUIUtility.TrTextContent("LUT size", "Sets the size of the internal and external color grading lookup textures (LUTs).");
+            public static GUIContent useFastSRGBLinearConversion = EditorGUIUtility.TrTextContent("Fast sRGB/Linear conversions", "Use faster, but less accurate approximation functions when converting between the sRGB and Linear color spaces.");
             public static string colorGradingModeWarning = "HDR rendering is required to use the high dynamic range color grading mode. The low dynamic range will be used instead.";
             public static string colorGradingModeSpecInfo = "The high dynamic range color grading mode works best on platforms that support floating point textures.";
             public static string colorGradingLutSizeWarning = "The minimal recommended LUT size for the high dynamic range color grading mode is 32. Using lower values will potentially result in color banding and posterization effects.";
@@ -137,8 +140,10 @@ namespace UnityEditor.Rendering.Universal
         SerializedProperty m_ShaderVariantLogLevel;
 
         LightRenderingMode selectedLightRenderingMode;
+        SerializedProperty m_PostProcessData;
         SerializedProperty m_ColorGradingMode;
         SerializedProperty m_ColorGradingLutSize;
+        SerializedProperty m_UseFastSRGBLinearConversion;
 
         SerializedProperty m_UseAdaptivePerformance;
         EditorPrefBoolFlags<EditorUtils.Unit> m_State;
@@ -211,8 +216,11 @@ namespace UnityEditor.Rendering.Universal
 
             m_ShaderVariantLogLevel = serializedObject.FindProperty("m_ShaderVariantLogLevel");
 
+            m_PostProcessData = serializedObject.FindProperty("m_PostProcessData");
             m_ColorGradingMode = serializedObject.FindProperty("m_ColorGradingMode");
             m_ColorGradingLutSize = serializedObject.FindProperty("m_ColorGradingLutSize");
+
+            m_UseFastSRGBLinearConversion = serializedObject.FindProperty("m_UseFastSRGBLinearConversion");
 
             m_UseAdaptivePerformance = serializedObject.FindProperty("m_UseAdaptivePerformance");
 
@@ -384,6 +392,49 @@ namespace UnityEditor.Rendering.Universal
 
                 EditorGUI.indentLevel++;
 
+#pragma warning disable 618 // Obsolete warning
+                bool renderersUsePostProcessData = false;
+                for (int i = 0; i < m_RendererDataProp.arraySize; i++)
+                {
+                    var rendererData = m_RendererDataProp.GetArrayElementAtIndex(i).objectReferenceValue as ScriptableRendererData;
+
+                    var forwardRendererData = rendererData as ForwardRendererData;
+                    if (forwardRendererData != null && forwardRendererData.postProcessData != null)
+                    {
+                        renderersUsePostProcessData = true;
+                        break;
+                    }
+
+                    var renderer2DData = rendererData as UnityEngine.Experimental.Rendering.Universal.Renderer2DData;
+                    if (renderer2DData != null && renderer2DData.postProcessData != null)
+                    {
+                        renderersUsePostProcessData = true;
+                        break;
+                    }
+                }
+#pragma warning restore 618 // Obsolete warning
+
+                GUI.enabled = !renderersUsePostProcessData;
+                EditorGUI.BeginChangeCheck();
+                var postProcessIncluded = EditorGUILayout.Toggle(Styles.postProcessIncluded, m_PostProcessData.objectReferenceValue != null);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    m_PostProcessData.objectReferenceValue = postProcessIncluded ? PostProcessData.GetDefaultPostProcessData() : null;
+                }
+                if (postProcessIncluded)
+                {
+                    EditorGUI.indentLevel++;
+                    EditorGUILayout.PropertyField(m_PostProcessData, Styles.postProcessLabel);
+                    EditorGUI.indentLevel--;
+                }
+                GUI.enabled = true;
+
+                if (renderersUsePostProcessData)
+                {
+                    EditorGUILayout.HelpBox("The URP asset contains Renderers that use custom Post Processing data, this check box has no effect.", MessageType.Warning);
+                }
+
+                GUI.enabled = postProcessIncluded || renderersUsePostProcessData;
                 EditorGUILayout.PropertyField(m_ColorGradingMode, Styles.colorGradingMode);
                 if (!isHdrOn && m_ColorGradingMode.intValue == (int)ColorGradingMode.HighDynamicRange)
                     EditorGUILayout.HelpBox(Styles.colorGradingModeWarning, MessageType.Warning);
@@ -394,6 +445,9 @@ namespace UnityEditor.Rendering.Universal
                 m_ColorGradingLutSize.intValue = Mathf.Clamp(m_ColorGradingLutSize.intValue, UniversalRenderPipelineAsset.k_MinLutSize, UniversalRenderPipelineAsset.k_MaxLutSize);
                 if (isHdrOn && m_ColorGradingMode.intValue == (int)ColorGradingMode.HighDynamicRange && m_ColorGradingLutSize.intValue < 32)
                     EditorGUILayout.HelpBox(Styles.colorGradingLutSizeWarning, MessageType.Warning);
+                GUI.enabled = true;
+
+                EditorGUILayout.PropertyField(m_UseFastSRGBLinearConversion, Styles.useFastSRGBLinearConversion);
 
                 EditorGUI.indentLevel--;
                 EditorGUILayout.Space();
@@ -436,7 +490,7 @@ namespace UnityEditor.Rendering.Universal
 
         void DrawRendererListLayout(ReorderableList list, SerializedProperty prop)
         {
-           list.drawElementCallback = (Rect rect, int index, bool isActive, bool isFocused) =>
+            list.drawElementCallback = (Rect rect, int index, bool isActive, bool isFocused) =>
             {
                 rect.y += 2;
                 Rect indexRect = new Rect(rect.x, rect.y, 14, EditorGUIUtility.singleLineHeight);
@@ -527,7 +581,7 @@ namespace UnityEditor.Rendering.Universal
                 UpdateDefaultRendererValue(index, newIndex);
             };
         }
-        
+
         void UpdateDefaultRendererValue(int index)
         {
             // If the index that is being removed is lower than the default renderer value,
@@ -562,6 +616,7 @@ namespace UnityEditor.Rendering.Universal
                 m_DefaultRendererProp.intValue++;
             }
         }
+
         bool ValidateRendererGraphicsAPIs(UniversalRenderPipelineAsset pipelineAsset, out string unsupportedGraphicsApisMessage)
         {
             // Check the list of Renderers against all Graphics APIs the player is built with.

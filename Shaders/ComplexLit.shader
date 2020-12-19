@@ -112,8 +112,7 @@ Shader "Universal Render Pipeline/Complex Lit"
 
             // -------------------------------------
             // Universal Pipeline keywords
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
@@ -162,6 +161,12 @@ Shader "Universal Render Pipeline/Complex Lit"
             // GPU Instancing
             #pragma multi_compile_instancing
             #pragma multi_compile _ DOTS_INSTANCING_ON
+
+            // -------------------------------------
+            // Universal Pipeline keywords
+
+            // This is used during shadow map generation to differentiate between directional and punctual light shadows, as they use different formulas to apply Normal Bias
+            #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
 
             #pragma vertex ShadowPassVertex
             #pragma fragment ShadowPassFragment
@@ -307,7 +312,7 @@ Shader "Universal Render Pipeline/Complex Lit"
             Cull[_Cull]
 
             HLSLPROGRAM
-            #pragma only_renderers gles gles3 glcore d3d11
+            #pragma only_renderers gles gles3 glcore
             #pragma target 2.0
 
             // -------------------------------------
@@ -329,8 +334,7 @@ Shader "Universal Render Pipeline/Complex Lit"
 
             // -------------------------------------
             // Universal Pipeline keywords
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
@@ -365,7 +369,7 @@ Shader "Universal Render Pipeline/Complex Lit"
             Cull[_Cull]
 
             HLSLPROGRAM
-            #pragma only_renderers gles gles3 glcore d3d11
+            #pragma only_renderers gles gles3 glcore
             #pragma target 2.0
 
             //--------------------------------------
@@ -395,7 +399,7 @@ Shader "Universal Render Pipeline/Complex Lit"
             Cull[_Cull]
 
             HLSLPROGRAM
-            #pragma only_renderers gles gles3 glcore d3d11
+            #pragma only_renderers gles gles3 glcore
             #pragma target 2.0
 
             //--------------------------------------
@@ -425,7 +429,7 @@ Shader "Universal Render Pipeline/Complex Lit"
             Cull[_Cull]
 
             HLSLPROGRAM
-            #pragma only_renderers gles gles3 glcore d3d11
+            #pragma only_renderers gles gles3 glcore
             #pragma target 2.0
 
             #pragma vertex DepthNormalsVertex
@@ -455,7 +459,7 @@ Shader "Universal Render Pipeline/Complex Lit"
             Cull Off
 
             HLSLPROGRAM
-            #pragma only_renderers gles gles3 glcore d3d11
+            #pragma only_renderers gles gles3 glcore
             #pragma target 2.0
 
             #pragma vertex UniversalVertexMeta
@@ -485,7 +489,7 @@ Shader "Universal Render Pipeline/Complex Lit"
             Cull[_Cull]
 
             HLSLPROGRAM
-            #pragma only_renderers gles gles3 glcore d3d11
+            #pragma only_renderers gles gles3 glcore
             #pragma target 2.0
 
             #pragma vertex vert
