@@ -39,11 +39,9 @@ namespace UnityEditor.Rendering.Universal
         {
             float classIdA;
             float classIdB;
-            string originalMtl;
             description.TryGetProperty("ClassIDa", out classIdA);
             description.TryGetProperty("ClassIDb", out classIdB);
-            description.TryGetProperty("ORIGINAL_MTL", out originalMtl);
-            return classIdA == 2121471519 && classIdB == 1660373836 && originalMtl != "PHYSICAL_MTL";
+            return classIdA == 2121471519 && classIdB == 1660373836;
         }
 
         public void OnPreprocessMaterialDescription(MaterialDescription description, Material material,

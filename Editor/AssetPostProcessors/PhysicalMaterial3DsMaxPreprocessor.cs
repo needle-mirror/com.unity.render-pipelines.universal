@@ -31,11 +31,9 @@ namespace UnityEditor.Rendering.Universal
         {
             float classIdA;
             float classIdB;
-            string originalMtl;
             description.TryGetProperty("ClassIDa", out classIdA);
             description.TryGetProperty("ClassIDb", out classIdB);
-            description.TryGetProperty("ORIGINAL_MTL", out originalMtl);
-            return classIdA == 1030429932 && classIdB == -559038463 || originalMtl == "PHYSICAL_MTL";
+            return classIdA == 1030429932 && classIdB == -559038463;
         }
 
         static bool Is3DsMaxSimplifiedPhysicalMaterial(MaterialDescription description)

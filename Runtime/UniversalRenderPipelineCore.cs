@@ -347,7 +347,9 @@ namespace UnityEngine.Rendering.Universal
         public static readonly string _SPOT = "_SPOT";
         public static readonly string _DIRECTIONAL = "_DIRECTIONAL";
         public static readonly string _POINT = "_POINT";
-        public static readonly string _DEFERRED_ADDITIONAL_LIGHT_SHADOWS = "_DEFERRED_ADDITIONAL_LIGHT_SHADOWS";
+        public static readonly string _DEFERRED_FIRST_LIGHT = "_DEFERRED_FIRST_LIGHT";
+        public static readonly string _DEFERRED_MAIN_LIGHT = "_DEFERRED_MAIN_LIGHT";
+        public static readonly string _DEFERRED_LIGHT_SHADOWS = "_DEFERRED_LIGHT_SHADOWS";
         public static readonly string _GBUFFER_NORMALS_OCT = "_GBUFFER_NORMALS_OCT";
         public static readonly string _DEFERRED_MIXED_LIGHTING = "_DEFERRED_MIXED_LIGHTING";
         public static readonly string LIGHTMAP_ON = "LIGHTMAP_ON";
@@ -428,43 +430,6 @@ namespace UnityEngine.Rendering.Universal
             return false;
         }
 
-#if ENABLE_VR && ENABLE_VR_MODULE
-        static List<XR.XRDisplaySubsystem> displaySubsystemList = new List<XR.XRDisplaySubsystem>();
-        static XR.XRDisplaySubsystem GetFirstXRDisplaySubsystem()
-        {
-            XR.XRDisplaySubsystem display = null;
-            SubsystemManager.GetInstances(displaySubsystemList);
-
-            if (displaySubsystemList.Count > 0)
-                display = displaySubsystemList[0];
-
-            return display;
-        }
-
-        // NB: This method is required for a hotfix in Hololens to prevent creating a render texture when using a renderer
-        // with custom render pass.
-        // TODO: Remove this method and usages when we have proper dependency tracking in the pipeline to know
-        // when a render pass requires camera color as input.
-        internal static bool IsRunningHololens(CameraData cameraData)
-        {
-#if PLATFORM_WINRT
-            if (cameraData.xr.enabled)
-            {
-                var platform = Application.platform;
-                if (platform == RuntimePlatform.WSAPlayerX86 || platform == RuntimePlatform.WSAPlayerARM || platform == RuntimePlatform.WSAPlayerX64)
-                {
-                    var displaySubsystem = GetFirstXRDisplaySubsystem();
-
-                    if (displaySubsystem != null && !displaySubsystem.displayOpaque)
-                        return true;
-                }
-            }
-#endif
-            return false;
-        }
-
-#endif
-
         Comparison<Camera> cameraComparison = (camera1, camera2) => { return (int)camera1.depth - (int)camera2.depth; };
 #if UNITY_2021_1_OR_NEWER
         void SortCameras(List<Camera> cameras)
@@ -513,10 +478,7 @@ namespace UnityEngine.Rendering.Universal
                 desc = camera.targetTexture.descriptor;
                 desc.width = camera.pixelWidth;
                 desc.height = camera.pixelHeight;
-                if (camera.cameraType == CameraType.SceneView  && !isHdrEnabled)
-                {
-                    desc.graphicsFormat = renderTextureFormatDefault;
-                }
+                desc.graphicsFormat = isHdrEnabled ? desc.graphicsFormat : renderTextureFormatDefault;
                 // SystemInfo.SupportsRenderTextureFormat(camera.targetTexture.descriptor.colorFormat)
                 // will assert on R8_SINT since it isn't a valid value of RenderTextureFormat.
                 // If this is fixed then we can implement debug statement to the user explaining why some

@@ -414,23 +414,13 @@ half4 SpeedTree8Frag(SpeedTreeFragmentInput input) : SV_Target
         occlusion = input.interpolated.color.r;
     #endif
 
-    InputData inputData;
-    InitializeInputData(input, normalTs, inputData);
-
     // subsurface (hijack emissive)
     #ifdef EFFECT_SUBSURFACE
-        Light mainLight = GetMainLight();
-    half fSubsurfaceRough = 0.7 - smoothness * 0.5;
-    half fSubsurface = D_GGX(clamp(-dot(mainLight.direction.xyz, inputData.viewDirectionWS.xyz), 0, 1), fSubsurfaceRough);
-
-    float4 shadowCoord = TransformWorldToShadowCoord(inputData.positionWS);
-    half realtimeShadow = MainLightRealtimeShadow(shadowCoord);
-    float3 tintedSubsurface = tex2D(_SubsurfaceTex, uv).rgb * _SubsurfaceColor.rgb;
-        float3 directSubsurface = tintedSubsurface.rgb * mainLight.color.rgb * fSubsurface * realtimeShadow;
-    float3 indirectSubsurface = tintedSubsurface.rgb * inputData.bakedGI.rgb * _SubsurfaceIndirect;
-    emission = directSubsurface + indirectSubsurface;
+        emission = tex2D(_SubsurfaceTex, uv).rgb * _SubsurfaceColor.rgb;
     #endif
 
+    InputData inputData;
+    InitializeInputData(input, normalTs, inputData);
 
 #ifdef GBUFFER
     // in LitForwardPass GlobalIllumination (and temporarily LightingPhysicallyBased) are called inside UniversalFragmentPBR
@@ -442,7 +432,7 @@ half4 SpeedTree8Frag(SpeedTreeFragmentInput input) : SV_Target
     MixRealtimeAndBakedGI(mainLight, inputData.normalWS, inputData.bakedGI, inputData.shadowMask);
     half3 color = GlobalIllumination(brdfData, inputData.bakedGI, occlusion, inputData.normalWS, inputData.viewDirectionWS);
 
-    return BRDFDataToGbuffer(brdfData, inputData, smoothness, emission + color);
+    return BRDFDataToGbuffer(brdfData, inputData, smoothness, emission + color, occlusion);
 
 #else
     half4 color = UniversalFragmentPBR(inputData, albedo, metallic, specular, smoothness, occlusion, emission, alpha);
@@ -533,8 +523,8 @@ half4 SpeedTree8FragDepthNormal(SpeedTreeDepthNormalFragmentInput input) : SV_Ta
     half alpha = diffuse.a * input.interpolated.color.a;
     AlphaDiscard(alpha - 0.3333, 0.0);
 
-    float3 normalWS = NormalizeNormalPerPixel(input.interpolated.normalWS);
-    return float4(PackNormalOctRectEncode(TransformWorldToViewDir(normalWS, true)), 0.0, 0.0);
+    float3 normalWS = NormalizeNormalPerPixel(input.interpolated.normalWS.xyz);
+    return half4(normalWS, 0.0);
 }
 
 #endif

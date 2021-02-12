@@ -4,10 +4,21 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [12.0.0] - 2021-01-11
+
+### Added
+- Added support for the PlayStation 5 platform.
+
+### Fixed
+- Fixed an issue where objects in motion might jitter when the Pixel Perfect Camera is used. [case 1300474](https://issuetracker.unity3d.com/issues/urp-characters-sprite-repeats-in-the-build-when-using-pixel-perfect-camera-and-2d-renderer)
+- Fixed an issue where the letter box/pillar box areas were not properly cleared when the Pixel Perfect Camera is used. [case 1291224](https://issuetracker.unity3d.com/issues/pixel-perfect-image-artifact-appear-between-the-reference-resolution-and-screen-resolution-borders-when-strech-fill-is-enabled)
+- Fixed an issue where the Cinemachine Pixel Perfect Extension might cause the Orthographic Size of the Camera to jump to 1 when the Scene is loaded. [case 1249076](https://issuetracker.unity3d.com/issues/cinemachine-pixel-perfect-camera-extension-causes-the-orthogonal-size-to-jump-to-1-when-the-scene-is-loaded)
+- Fixed an issue where render scale was breaking SSAO in scene view. [case 1296710](https://issuetracker.unity3d.com/issues/ssao-effect-floating-in-the-air-in-scene-view-when-2-objects-with-shadergraph-materials-are-on-top-of-each-other)
+- Fixed GC allocations from XR occlusion mesh when using multipass.
+
 ## [11.0.0] - 2020-10-21
 ### Added
 - Added real-time Point Light Shadows.
-- Added support for custom additional (i.e punctual) light shadow resolutions.
 - Added a supported MSAA samples count check, so the actual supported MSAA samples count value can be assigned to RenderTexture descriptors.
 - Added the TerrainCompatible SubShader Tag. Use this Tag in your custom shader to tell Unity that the shader is compatible with the Terrain system.
 - Added _CameraSortingLayerTexture global shader variable and related parameters
@@ -17,8 +28,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added an option to use faster, but less accurate approximation functions when converting between the sRGB and Linear color spaces.
 - Added screen space shadow as renderer feature
 - Added [DisallowMultipleRendererFeature] attribute for Renderer Features.
-- Added support for the PlayStation 5 platform.
-- Added a SpeedTree 8 Shader Graph but did not set it as the default when importing or upgrading Speed Tree 8 assets. Because URP doesn't yet support per-material culling, this Shader Graph does not yet behave in the same way as the existing handwritten SpeedTree 8 shader for URP.
 
 ### Changed
 - Optimized 2D Renderer performance on mobile GPUs by reducing the number of render target switches.
@@ -44,27 +53,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Changed shader keywords of main light shadow from toggling to enumerating.
 - Always use "High" quality normals, which normalizes the normal in pixel shader. "Low" quality normals looked too much like a bug.
 - Re-enabled implicit MSAA resolve to backbuffer on Metal MacOS.
+- Optimized 2D performance by rendering straight to the backbuffer if possible
 - Changed Post Process Data to bool. When it is no enabled all post processing is stripped from build, when it is enabled you can still override resources there.
+- Converted XR automated tests to use MockHMD.
+- Reduced the size of the fragment input struct of the Terrain and Forward lighting shaders.
 
 ### Fixed
-- Fixed an issue where Transparency Sort Mode value is taken from Graphics Settings instead of 2D Renderer [1310652](https://issuetracker.unity3d.com/issues/transparency-sort-mode-value-is-taken-from-graphics-settings-instead-of-2d-forward-renderer)
-- Fixed an issue where Post Processing doesn't enable when PostProcessData reassigned from the asset selector window.
-- Fixed an issue where the camera renders black screen when Post Processing is enabled in the 2D Renderer and in the Camera Component.
-- Fixed an issue where ShadowCaster2D was generating garbage when running in the editor. [case 1304158](https://issuetracker.unity3d.com/product/unity/issues/guid/1304158/)
+- Fixed an issue where additional lights would not render with WebGL 1
 - Fixed an issue where the 2D Renderer was incorrectly rendering transparency with normal maps on an empty background.
-- Fixed an issue where 2D lighting was incorrectly calculated when using a perspective camera.
-- Fixed an issue where Light2D did not upgrade Shadow Strength, Volumetric Intensity, Volumetric Shadow Strength correctly [case 1317755](https://issuetracker.unity3d.com/issues/urp-lighting-missing-orange-tint-in-scene-background)
-- Fixed an issue where normal-mapped Sprites could render differently depending on whether they're dynamically-batched. [case 1286186](https://issuetracker.unity3d.com/issues/urp-2d-2d-light-on-a-rotated-sprite-is-skewed-when-using-normal-map-and-sorting-layer-is-not-default)
-- Fixed an issue where 2D Shadows were casting to the wrong layers [case 1300753][https://issuetracker.unity3d.com/product/unity/issues/guid/1300753/]
-- Fixed an issue where the scene view camera was not correctly cleared for the 2D Renderer. [case 1311377](https://issuetracker.unity3d.com/product/unity/issues/guid/1311377/)
 - Fixed an issue where Sprites on one Sorting Layer were fully lit even when there's no 2D light targeting that layer.
 - Fixed an issue where null reference exception was thrown when creating a 2D Renderer Data asset while scripts are compiling. [case 1263040](https://issuetracker.unity3d.com/issues/urp-nullreferenceexception-error-is-thrown-on-creating-2d-renderer-asset)
-- Fixed an issue where objects in motion might jitter when the Pixel Perfect Camera is used. [case 1300474](https://issuetracker.unity3d.com/issues/urp-characters-sprite-repeats-in-the-build-when-using-pixel-perfect-camera-and-2d-renderer)
-- Fixed an issue where the letter box/pillar box areas were not properly cleared when the Pixel Perfect Camera is used. [case 1291224](https://issuetracker.unity3d.com/issues/pixel-perfect-image-artifact-appear-between-the-reference-resolution-and-screen-resolution-borders-when-strech-fill-is-enabled)
-- Fixed an issue where the Cinemachine Pixel Perfect Extension might cause the Orthographic Size of the Camera to jump to 1 when the Scene is loaded. [case 1249076](https://issuetracker.unity3d.com/issues/cinemachine-pixel-perfect-camera-extension-causes-the-orthogonal-size-to-jump-to-1-when-the-scene-is-loaded)
 - Fixed an issue where no preview would show for the lit sprite master node in shadergraph
 - Fixed an issue where no shader was generated for unlit sprite shaders in shadergraph
 - Fixed an issue where Sprite-Lit-Default shader's Normal Map property wasn't affected by Tiling or Offset. [case 1270850](https://issuetracker.unity3d.com/issues/sprite-lit-default-shaders-normal-map-and-mask-textures-are-not-affected-by-tiling-and-offset-values)
+- Fixed an issue where normal-mapped Sprites could render differently depending on whether they're dynamically-batched. [case 1286186](https://issuetracker.unity3d.com/issues/urp-2d-2d-light-on-a-rotated-sprite-is-skewed-when-using-normal-map-and-sorting-layer-is-not-default)
 - Removed the warning about mis-matched vertex streams when creating a default Particle System. [case 1285272](https://issuetracker.unity3d.com/issues/particles-urp-default-material-shows-warning-in-inspector)
 - Fixed latest mockHMD renderviewport scale doesn't fill whole view after scaling. [case 1286161] (https://issuetracker.unity3d.com/issues/xr-urp-renderviewportscale-doesnt-fill-whole-view-after-scaling)
 - Fixed camera renders black in XR when user sets invalid MSAA value.
@@ -88,24 +90,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed Deferred renderer on some Android devices by forcing accurate GBuffer normals. [case 1288042]
 - Fixed an issue where MSAA did not work in Editor Game View on Windows with Vulkan.
 - Fixed issue where selecting and deselecting Forward Renderer asset would leak memory [case 1290628](https://issuetracker.unity3d.com/issues/urp-scriptablerendererfeatureeditor-memory-leak-while-interacting-with-forward-renderer-in-the-project-window)
-- Fixed an issue where render scale was breaking SSAO in scene view. [case 1296710](https://issuetracker.unity3d.com/issues/ssao-effect-floating-in-the-air-in-scene-view-when-2-objects-with-shadergraph-materials-are-on-top-of-each-other)
-- Fixed an issue where the inspector of Renderer Data would break after adding RenderObjects renderer feature and then adding another renderer feature.
-- Fixed material upgrader to run in batch mode [case 1305402]
-- Removed Custom.meta which was causing warnings. [case 1314288](https://issuetracker.unity3d.com/issues/urp-warnings-about-missing-metadata-appear-after-installing)
-- Fixed an issue such that it is now posible to enqueue render passes at runtime.
-- Fixed a regression where the precision was changed. [case 1313942](https://issuetracker.unity3d.com/issues/urp-shader-precision-is-reduced-to-half-when-scriptablerenderfeature-class-is-in-the-project)
 - Fixed the default background color for previews to use the original color.
-- Fixed GC allocations from XR occlusion mesh when using multipass.
-- Fixed wrong shader / properties assignement to materials created from 3DsMax 2021 Physical Material. (case 1293576)
-- Fixed shadow cascade blend culling factor.
+- Fixed an issue where the scene view would turn black when bloom was enabled. [case 1298790](https://issuetracker.unity3d.com/issues/urp-bloom-and-tonemapping-causes-the-screen-to-go-black-in-scene-mode)
 - Fixed an issue where having "Opaque Texture" and MSAA enabled would cause the opaque texture to be rendered black on old Apple GPUs [case 1247423](https://issuetracker.unity3d.com/issues/urp-metal-opaque-objects-are-rendered-black-when-msaa-is-enabled)
-- Fixed an issue where bokeh dof is applied incorrectly when there is an overlay camera in the camera stack. [case 1303572](https://issuetracker.unity3d.com/issues/urp-bokeh-depth-of-field-is-applied-incorrectly-when-the-main-camera-has-an-overlay-camera-in-the-camera-stack)
-- Fixed issue causing missing shaders on DirectX 11 feature level 10 GPUs. [case 1278390](https://issuetracker.unity3d.com/product/unity/issues/guid/1278390/)
-- Fixed errors when the Profiler is used with XR multipass. [case 1322916](https://issuetracker.unity3d.com/issues/xr-urp-profiler-spams-errors-in-the-console-upon-entering-play-mode)
-- Fixed an issue where SMAA did not work for OpenGL [case 1336708](https://issuetracker.unity3d.com/issues/urp-there-is-no-effect-when-using-smaa-in-urp-with-opengles-api)
-- Fixed an issue where changing camera's position in the BeginCameraRendering do not apply properly. [case 1318629] (https://issuetracker.unity3d.com/issues/camera-doesnt-move-when-changing-its-position-in-the-begincamerarendering-and-the-endcamerarendering-methods)
-- Fixed a performance issue in Hololens when using renderer with custom render passes.
-- Fixed an issue where Particle Lit shader had an incorrect fallback shader [case 1331780]
+- Fixed SAMPLE_TEXTURECUBE_ARRAY_LOD macro when using OpenGL ES. [case 1285132](https://issuetracker.unity3d.com/issues/urp-android-error-sample-texturecube-array-lod-is-not-supported-on-gles-3-dot-0-when-using-cubemap-array-shader-shaders)
+- Fixed an issue such that it is now posible to enqueue render passes at runtime.
 
 ## [10.2.0] - 2020-10-19
 
@@ -125,6 +114,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added Parallax Mapping to the Lit shader (Lit.shader).
 - Added the Detail Inputs setting group in the Lit shader (Lit.shader).
 - Added Smooth shadow fading.
+- Added SSAO support for deferred renderer.
 - The pipeline now outputs a warning in the console when trying to access camera color or depth texture when those are not valid. Those textures are only available in the context of `ScriptableRenderPass`.
 - Added a property to access the renderer from the `CameraData`.
 

@@ -1,17 +1,8 @@
-# Common properties of 2D Lights
-Each 2D Light Type has various properties and options to customize their appearance and behavior. This page documents the properties that are common to all 2D Light Types.
-
- following are the common properties used by the different Light types. For properties specific to each of the available Light Types, refer to their respective sections:
-
-- [Freeform](LightTypes.html#freeform)
-- [Sprite](LightTypes.html#sprite)
-- [Spot](LightTypes.html#spot) (**Note:** The **Point** Light Type has been renamed to the **Spot** Light Type from URP 11 onwards.)
-- [Global](LightTypes.html#global)
-
+# 2D Lights properties
 
 ## Creating a Light
 
-![](Images/2D/2d-lights-gameobject-menu.png)
+![image alt text](Images/2D/image_7.png)
 
 Create a __2D Light__ GameObject by going to __GameObject > Light > 2D__ and selecting one of the five available types:
 
@@ -38,6 +29,9 @@ The following are the common properties used by the different Light types.
 | __Volumetric Shadow Strength__                                  | Use the slider to control the amount of volumetric light that __Shadow Caster 2Ds__ block when they obscure this Light. The value scales from 0 (no light is blocked) to 1 (all light is blocked). |
 | __[Normal Map Quality](#quality)__                                      | Select either __Disabled__ (degfault)m __Accurate__ or __Fast__ to adjust the accuracy of the lighting calculations used. |
 | __[Normal Map Distance](#distance)__  (available when __Use Normal Map__ quality is not disabled) | Enter the desired distance (in Unity units) between the Light and the lit Sprite. This does not Transform the position of the Light in the Scene. |
+
+
+
 
 ## Overlap Operation
 

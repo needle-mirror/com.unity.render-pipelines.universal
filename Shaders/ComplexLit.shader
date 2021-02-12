@@ -239,7 +239,43 @@ Shader "Universal Render Pipeline/Complex Lit"
             ENDHLSL
         }
 
-        // This pass it not used during regular rendering, only for lightmap baking.
+        // Same as DepthNormals pass, but used for deferred renderer and forwardOnly materials.
+        Pass
+        {
+            Name "DepthNormalsOnly"
+            Tags{"LightMode" = "DepthNormalsOnly"}
+
+            ZWrite On
+            Cull[_Cull]
+
+            HLSLPROGRAM
+            #pragma exclude_renderers gles gles3 glcore
+            #pragma target 4.5
+
+            #pragma vertex DepthNormalsVertex
+            #pragma fragment DepthNormalsFragment
+
+            // -------------------------------------
+            // Material Keywords
+            #pragma shader_feature_local _NORMALMAP
+            #pragma shader_feature_local_fragment _ALPHATEST_ON
+            #pragma shader_feature_local_fragment _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+
+            // -------------------------------------
+            // Unity defined keywords
+            #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT // forward-only variant
+
+            //--------------------------------------
+            // GPU Instancing
+            #pragma multi_compile_instancing
+            #pragma multi_compile _ DOTS_INSTANCING_ON
+
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/LitInput.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/DepthNormalsPass.hlsl"
+            ENDHLSL
+        }
+
+            // This pass it not used during regular rendering, only for lightmap baking.
         Pass
         {
             Name "Meta"
@@ -312,7 +348,7 @@ Shader "Universal Render Pipeline/Complex Lit"
             Cull[_Cull]
 
             HLSLPROGRAM
-            #pragma only_renderers gles gles3 glcore d3d11
+            #pragma only_renderers gles gles3 glcore
             #pragma target 2.0
 
             // -------------------------------------
@@ -369,7 +405,7 @@ Shader "Universal Render Pipeline/Complex Lit"
             Cull[_Cull]
 
             HLSLPROGRAM
-            #pragma only_renderers gles gles3 glcore d3d11
+            #pragma only_renderers gles gles3 glcore
             #pragma target 2.0
 
             //--------------------------------------
@@ -399,7 +435,7 @@ Shader "Universal Render Pipeline/Complex Lit"
             Cull[_Cull]
 
             HLSLPROGRAM
-            #pragma only_renderers gles gles3 glcore d3d11
+            #pragma only_renderers gles gles3 glcore
             #pragma target 2.0
 
             //--------------------------------------
@@ -429,7 +465,7 @@ Shader "Universal Render Pipeline/Complex Lit"
             Cull[_Cull]
 
             HLSLPROGRAM
-            #pragma only_renderers gles gles3 glcore d3d11
+            #pragma only_renderers gles gles3 glcore
             #pragma target 2.0
 
             #pragma vertex DepthNormalsVertex
@@ -459,7 +495,7 @@ Shader "Universal Render Pipeline/Complex Lit"
             Cull Off
 
             HLSLPROGRAM
-            #pragma only_renderers gles gles3 glcore d3d11
+            #pragma only_renderers gles gles3 glcore
             #pragma target 2.0
 
             #pragma vertex UniversalVertexMeta
@@ -489,7 +525,7 @@ Shader "Universal Render Pipeline/Complex Lit"
             Cull[_Cull]
 
             HLSLPROGRAM
-            #pragma only_renderers gles gles3 glcore d3d11
+            #pragma only_renderers gles gles3 glcore
             #pragma target 2.0
 
             #pragma vertex vert

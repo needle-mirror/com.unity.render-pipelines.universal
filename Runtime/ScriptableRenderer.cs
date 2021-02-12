@@ -470,12 +470,7 @@ namespace UnityEngine.Rendering.Universal
             Camera camera = cameraData.camera;
 
             CommandBuffer cmd = CommandBufferPool.Get();
-
-            // TODO: move skybox code from C++ to URP in order to remove the call to context.Submit() inside DrawSkyboxPass
-            // Until then, we can't use nested profiling scopes with XR multipass
-            CommandBuffer cmdScope = renderingData.cameraData.xr.enabled ? null : cmd;
-
-            using (new ProfilingScope(cmdScope, profilingExecute))
+            using (new ProfilingScope(cmd, profilingExecute))
             {
                 InternalStartRendering(context, ref renderingData);
 
