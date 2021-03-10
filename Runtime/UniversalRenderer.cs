@@ -20,21 +20,21 @@ namespace UnityEngine.Rendering.Universal
     /// This renderer is supported on all Universal RP supported platforms.
     /// It uses a classic forward rendering strategy with per-object light culling.
     /// </summary>
-    public sealed class ForwardRenderer : ScriptableRenderer
+    public sealed class UniversalRenderer : ScriptableRenderer
     {
         const int k_DepthStencilBufferBits = 32;
         static readonly string k_DepthNormalsOnly = "DepthNormalsOnly";
 
         private static class Profiling
         {
-            private const string k_Name = nameof(ForwardRenderer);
+            private const string k_Name = nameof(UniversalRenderer);
             public static readonly ProfilingSampler createCameraRenderTarget = new ProfilingSampler($"{k_Name}.{nameof(CreateCameraRenderTarget)}");
         }
 
         // Rendering mode setup from UI.
         internal RenderingMode renderingMode { get { return m_RenderingMode;  } }
         // Actual rendering mode, which may be different (ex: wireframe rendering, harware not capable of deferred rendering).
-        internal RenderingMode actualRenderingMode { get { return GL.wireframe || m_DeferredLights == null || !m_DeferredLights.IsRuntimeSupportedThisFrame()  ? RenderingMode.Forward : this.renderingMode; } }
+        internal RenderingMode actualRenderingMode { get { return GL.wireframe || m_DeferredLights == null || !m_DeferredLights.IsRuntimeSupportedThisFrame() || m_DeferredLights.IsOverlay ? RenderingMode.Forward : this.renderingMode; } }
         internal bool accurateGbufferNormals { get { return m_DeferredLights != null ? m_DeferredLights.AccurateGbufferNormals : false; } }
         DepthOnlyPass m_DepthPrepass;
         DepthNormalOnlyPass m_DepthNormalPrepass;
@@ -60,7 +60,7 @@ namespace UnityEngine.Rendering.Universal
         CopyDepthPass m_XRCopyDepthPass;
 #endif
 #if UNITY_EDITOR
-        SceneViewDepthCopyPass m_SceneViewDepthCopyPass;
+        CopyDepthPass m_FinalDepthCopyPass;
 #endif
 
         RenderTargetHandle m_ActiveCameraColorAttachment;
@@ -95,7 +95,7 @@ namespace UnityEngine.Rendering.Universal
         internal RenderTargetHandle afterPostProcessColor { get => m_PostProcessPasses.afterPostProcessColor; }
         internal RenderTargetHandle colorGradingLut { get => m_PostProcessPasses.colorGradingLut; }
 
-        public ForwardRenderer(ForwardRendererData data) : base(data)
+        public UniversalRenderer(UniversalRendererData data) : base(data)
         {
 #if ENABLE_VR && ENABLE_XR_MODULE
             UniversalRenderPipeline.m_XRSystem.InitializeXRSystemData(data.xrSystemData);
@@ -184,7 +184,7 @@ namespace UnityEngine.Rendering.Universal
             m_FinalBlitPass = new FinalBlitPass(RenderPassEvent.AfterRendering + 1, m_BlitMaterial);
 
 #if UNITY_EDITOR
-            m_SceneViewDepthCopyPass = new SceneViewDepthCopyPass(RenderPassEvent.AfterRendering + 9, m_CopyDepthMaterial);
+            m_FinalDepthCopyPass = new CopyDepthPass(RenderPassEvent.AfterRendering + 9, m_CopyDepthMaterial);
 #endif
 
             // RenderTexture format depends on camera and pipeline (HDR, non HDR, etc)
@@ -269,7 +269,10 @@ namespace UnityEngine.Rendering.Universal
             }
 
             if (m_DeferredLights != null)
+            {
                 m_DeferredLights.ResolveMixedLightingMode(ref renderingData);
+                m_DeferredLights.IsOverlay = cameraData.renderType == CameraRenderType.Overlay;
+            }
 
             // Assign the camera color target early in case it is needed during AddRenderPasses.
             bool isPreviewCamera = cameraData.isPreviewCamera;
@@ -301,6 +304,12 @@ namespace UnityEngine.Rendering.Universal
             bool isSceneViewCamera = cameraData.isSceneViewCamera;
             bool requiresDepthTexture = cameraData.requiresDepthTexture || renderPassInputs.requiresDepthTexture || this.actualRenderingMode == RenderingMode.Deferred;
 
+#if UNITY_EDITOR
+            bool isGizmosEnabled = UnityEditor.Handles.ShouldRenderGizmos();
+#else
+            bool isGizmosEnabled = false;
+#endif
+
             bool mainLightShadows = m_MainLightShadowCasterPass.Setup(ref renderingData);
             bool additionalLightShadows = m_AdditionalLightsShadowCasterPass.Setup(ref renderingData);
             bool transparentsNeedSettingsPass = m_TransparentSettingsPass.Setup(ref renderingData);
@@ -311,6 +320,7 @@ namespace UnityEngine.Rendering.Universal
             // - Render passes require it
             bool requiresDepthPrepass = requiresDepthTexture && !CanCopyDepth(ref renderingData.cameraData);
             requiresDepthPrepass |= isSceneViewCamera;
+            requiresDepthPrepass |= isGizmosEnabled;
             requiresDepthPrepass |= isPreviewCamera;
             requiresDepthPrepass |= renderPassInputs.requiresDepthPrepass;
             requiresDepthPrepass |= renderPassInputs.requiresNormalsTexture;
@@ -326,7 +336,7 @@ namespace UnityEngine.Rendering.Universal
 
             // The copying of depth should normally happen after rendering opaques.
             // But if we only require it for post processing or the scene camera then we do it after rendering transparent objects
-            m_CopyDepthPass.renderPassEvent = (!requiresDepthTexture && (applyPostProcessing || isSceneViewCamera)) ? RenderPassEvent.AfterRenderingTransparents : RenderPassEvent.AfterRenderingOpaques;
+            m_CopyDepthPass.renderPassEvent = (!requiresDepthTexture && (applyPostProcessing || isSceneViewCamera || isGizmosEnabled)) ? RenderPassEvent.AfterRenderingTransparents : RenderPassEvent.AfterRenderingOpaques;
             createColorTexture |= RequiresIntermediateColorTexture(ref cameraData);
             createColorTexture |= renderPassInputs.requiresColorTexture;
             createColorTexture &= !isPreviewCamera;
@@ -581,12 +591,13 @@ namespace UnityEngine.Rendering.Universal
             }
 
 #if UNITY_EDITOR
-            if (isSceneViewCamera)
+            if (isSceneViewCamera && isGizmosEnabled)
             {
                 // Scene view camera should always resolve target (not stacked)
                 Assertions.Assert.IsTrue(lastCameraInTheStack, "Editor camera must resolve target upon finish rendering.");
-                m_SceneViewDepthCopyPass.Setup(m_DepthTexture);
-                EnqueuePass(m_SceneViewDepthCopyPass);
+                m_FinalDepthCopyPass.Setup(m_DepthTexture, RenderTargetHandle.CameraTarget);
+                m_FinalDepthCopyPass.MssaSamples = 0;
+                EnqueuePass(m_FinalDepthCopyPass);
             }
 #endif
         }
@@ -661,7 +672,6 @@ namespace UnityEngine.Rendering.Universal
                 applyAdditionalShadow ? m_AdditionalLightsShadowCasterPass : null,
                 hasDepthPrepass,
                 hasNormalPrepass,
-                renderingData.cameraData.renderType == CameraRenderType.Overlay,
                 m_DepthTexture,
                 m_DepthInfoTexture,
                 m_TileDepthInfoTexture,
@@ -767,7 +777,9 @@ namespace UnityEngine.Rendering.Universal
             return true;
             #else
             // On Metal/iOS the MSAA resolve is done implicitly as part of the renderpass, so we do not need an extra intermediate pass for the explicit autoresolve.
-            return !SystemInfo.supportsMultisampleAutoResolve
+            // Note: On Vulkan Standalone, despite SystemInfo.supportsMultisampleAutoResolve being true, the backbuffer has only 1 sample, so we still require
+            // the explicit resolve on non-mobile platforms with supportsMultisampleAutoResolve.
+            return !(SystemInfo.supportsMultisampleAutoResolve && Application.isMobilePlatform)
                 && SystemInfo.graphicsDeviceType != GraphicsDeviceType.Metal;
             #endif
         }
