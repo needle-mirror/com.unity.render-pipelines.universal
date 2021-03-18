@@ -7,12 +7,10 @@ Shader "Hidden/Universal Render Pipeline/FinalPost"
         #pragma multi_compile_local_fragment _ _DITHERING
         #pragma multi_compile_local_fragment _ _LINEAR_TO_SRGB_CONVERSION
         #pragma multi_compile _ _USE_DRAW_PROCEDURAL
-        #pragma multi_compile _ DEBUG_DISPLAY
 
         #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
         #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-        #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Debug/DebuggingFullscreen.hlsl"
         #include "Packages/com.unity.render-pipelines.universal/Shaders/PostProcessing/Common.hlsl"
 
         TEXTURE2D_X(_SourceTex);
@@ -133,18 +131,7 @@ Shader "Hidden/Universal Render Pipeline/FinalPost"
             }
             #endif
 
-            half4 finalColor = half4(color, 1);
-
-            #if defined(DEBUG_DISPLAY)
-            half4 debugColor = 0;
-
-            if(CanDebugOverrideOutputColor(finalColor, uv, debugColor))
-            {
-                return debugColor;
-            }
-            #endif
-
-            return finalColor;
+            return half4(color, 1.0);
         }
 
     ENDHLSL

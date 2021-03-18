@@ -20,9 +20,9 @@ Shader "Hidden/Universal Render Pipeline/CameraMotionBlur"
         float4x4 _ViewProjM;
         float4x4 _PrevViewProjM;
 #endif
-        half _Intensity;
-        half _Clamp;
-        half4 _SourceSize;
+        float _Intensity;
+        float _Clamp;
+        float4 _SourceSize;
 
         struct VaryingsCMB
         {
@@ -50,14 +50,14 @@ Shader "Hidden/Universal Render Pipeline/CameraMotionBlur"
             return output;
         }
 
-        half2 ClampVelocity(half2 velocity, half maxVelocity)
+        float2 ClampVelocity(float2 velocity, float maxVelocity)
         {
-            half len = length(velocity);
+            float len = length(velocity);
             return (len > 0.0) ? min(len, maxVelocity) * (velocity * rcp(len)) : 0.0;
         }
 
         // Per-pixel camera velocity
-        half2 GetCameraVelocity(float4 uv)
+        float2 GetCameraVelocity(float4 uv)
         {
             float depth = SAMPLE_TEXTURE2D_X(_CameraDepthTexture, sampler_PointClamp, uv.xy).r;
 
@@ -74,15 +74,15 @@ Shader "Hidden/Universal Render Pipeline/CameraMotionBlur"
             float4 prevClipPos = mul(_PrevViewProjM, prevPos);
             float4 curClipPos = mul(_ViewProjM, worldPos);
 
-            half2 prevPosCS = prevClipPos.xy / prevClipPos.w;
-            half2 curPosCS = curClipPos.xy / curClipPos.w;
+            float2 prevPosCS = prevClipPos.xy / prevClipPos.w;
+            float2 curPosCS = curClipPos.xy / curClipPos.w;
 
             return ClampVelocity(prevPosCS - curPosCS, _Clamp);
         }
 
-        half3 GatherSample(half sampleNumber, half2 velocity, half invSampleCount, float2 centerUV, half randomVal, half velocitySign)
+        float3 GatherSample(float sampleNumber, float2 velocity, float invSampleCount, float2 centerUV, float randomVal, float velocitySign)
         {
-            half  offsetLength = (sampleNumber + 0.5h) + (velocitySign * (randomVal - 0.5h));
+            float  offsetLength = (sampleNumber + 0.5) + (velocitySign * (randomVal - 0.5));
             float2 sampleUV = centerUV + (offsetLength * invSampleCount) * velocity * velocitySign;
             return SAMPLE_TEXTURE2D_X(_SourceTex, sampler_PointClamp, sampleUV).xyz;
         }
@@ -92,9 +92,9 @@ Shader "Hidden/Universal Render Pipeline/CameraMotionBlur"
             UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
 
             float2 uv = UnityStereoTransformScreenSpaceTex(input.uv.xy);
-            half2 velocity = GetCameraVelocity(float4(uv, input.uv.zw)) * _Intensity;
-            half randomVal = InterleavedGradientNoise(uv * _SourceSize.xy, 0);
-            half invSampleCount = rcp(iterations * 2.0);
+            float2 velocity = GetCameraVelocity(float4(uv, input.uv.zw)) * _Intensity;
+            float randomVal = InterleavedGradientNoise(uv * _SourceSize.xy, 0);
+            float invSampleCount = rcp(iterations * 2.0);
 
             half3 color = 0.0;
 

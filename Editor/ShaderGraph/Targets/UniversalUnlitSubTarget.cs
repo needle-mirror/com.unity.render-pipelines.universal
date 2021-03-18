@@ -1,6 +1,9 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEditor.ShaderGraph;
+using UnityEngine.Rendering;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using UnityEditor.ShaderGraph.Legacy;
@@ -126,7 +129,7 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
                 generatesPreview = true,
                 passes = new PassCollection
                 {
-                    { UnlitPasses.Forward },
+                    { UnlitPasses.Unlit },
                     { CorePasses.ShadowCaster },
                     { CorePasses.DepthOnly },
                 },
@@ -136,7 +139,7 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
             {
                 get
                 {
-                    var unlit = UnlitPasses.Forward;
+                    var unlit = UnlitPasses.Unlit;
                     var shadowCaster = CorePasses.ShadowCaster;
                     var depthOnly = CorePasses.DepthOnly;
 
@@ -164,16 +167,16 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
         #region Pass
         static class UnlitPasses
         {
-            public static PassDescriptor Forward = new PassDescriptor
+            public static PassDescriptor Unlit = new PassDescriptor
             {
                 // Definition
-                displayName = "Universal Forward",
+                displayName = "Pass",
                 referenceName = "SHADERPASS_UNLIT",
                 useInPreview = true,
 
                 // Template
-                passTemplatePath = UniversalTarget.kTemplatePath,
-                sharedTemplateDirectories = UniversalTarget.kSharedTemplateDirectories,
+                passTemplatePath = GenerationUtils.GetDefaultTemplatePath("PassMesh.template"),
+                sharedTemplateDirectories = GenerationUtils.GetDefaultSharedTemplateDirectories(),
 
                 // Port Mask
                 validVertexBlocks = CoreBlockMasks.Vertex,
@@ -181,31 +184,14 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
 
                 // Fields
                 structs = CoreStructCollections.Default,
-                requiredFields = UnlitRequiredFields.Unlit,
                 fieldDependencies = CoreFieldDependencies.Default,
 
                 // Conditional State
                 renderStates = CoreRenderStates.Default,
                 pragmas = CorePragmas.Forward,
-                defines = CoreDefines.UseFragmentFog,
                 keywords = UnlitKeywords.Unlit,
                 includes = UnlitIncludes.Unlit,
-
-                // Custom Interpolator Support
-                customInterpolators = CoreCustomInterpDescriptors.Common
             };
-
-            #region RequiredFields
-            static class UnlitRequiredFields
-            {
-                public static readonly FieldCollection Unlit = new FieldCollection()
-                {
-                    StructFields.Varyings.positionWS,
-                    StructFields.Varyings.normalWS,
-                    StructFields.Varyings.viewDirectionWS,
-                };
-            }
-            #endregion
         }
         #endregion
 
@@ -214,13 +200,9 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
         {
             public static KeywordCollection Unlit = new KeywordCollection
             {
-                // This contain lightmaps because without a proper custom lighting solution in Shadergraph,
-                // people start with the unlit then add lightmapping nodes to it.
-                // If we removed lightmaps from the unlit target this would ruin a lot of peoples days.
-                { CoreKeywordDescriptors.StaticLightmap },
+                { CoreKeywordDescriptors.Lightmap },
                 { CoreKeywordDescriptors.DirectionalLightmapCombined },
                 { CoreKeywordDescriptors.SampleGI },
-                { CoreKeywordDescriptors.DebugDisplay },
             };
         }
         #endregion

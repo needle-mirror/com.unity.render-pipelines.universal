@@ -106,16 +106,12 @@ float4x4 unity_WorldToObject;
 float4 unity_LODFade; // x is the fade value ranging within [0,1]. y is x quantized into 16 levels
 real4 unity_WorldTransformParams; // w is usually 1.0, or -1.0 for odd-negative scale transforms
 
-// Render Layer block feature
-// Only the first channel (x) contains valid data and the float must be reinterpreted using asuint() to extract the original 32 bits values.
-float4 unity_RenderingLayer;
-
 // Light Indices block feature
 // These are set internally by the engine upon request by RendererConfiguration.
-half4 unity_LightData;
-half4 unity_LightIndices[2];
+real4 unity_LightData;
+real4 unity_LightIndices[2];
 
-half4 unity_ProbesOcclusion;
+float4 unity_ProbesOcclusion;
 
 // Reflection Probe 0 block feature
 // HDR environment map decode instructions
@@ -123,6 +119,7 @@ real4 unity_SpecCube0_HDR;
 
 // Lightmap block feature
 float4 unity_LightmapST;
+float4 unity_LightmapIndex;
 float4 unity_DynamicLightmapST;
 
 // SH block feature
@@ -149,6 +146,12 @@ float4x4 unity_StereoCameraInvProjection[2];
 
 float3   unity_StereoWorldSpaceCameraPos[2];
 float4   unity_StereoScaleOffset[2];
+CBUFFER_END
+#endif
+
+#if defined(USING_STEREO_MATRICES) && defined(UNITY_STEREO_MULTIVIEW_ENABLED)
+CBUFFER_START(UnityStereoEyeIndices)
+    float4 unity_StereoEyeIndices[2];
 CBUFFER_END
 #endif
 
@@ -209,17 +212,9 @@ SAMPLER(samplerunity_Lightmap);
 TEXTURE2D_ARRAY(unity_Lightmaps);
 SAMPLER(samplerunity_Lightmaps);
 
-// Dynamic lightmap
-TEXTURE2D(unity_DynamicLightmap);
-SAMPLER(samplerunity_DynamicLightmap);
-// TODO ENLIGHTEN: Instanced GI
-
 // Dual or directional lightmap (always used with unity_Lightmap, so can share sampler)
 TEXTURE2D(unity_LightmapInd);
 TEXTURE2D_ARRAY(unity_LightmapsInd);
-TEXTURE2D(unity_DynamicDirectionality);
-// TODO ENLIGHTEN: Instanced GI
-// TEXTURE2D_ARRAY(unity_DynamicDirectionality);
 
 TEXTURE2D(unity_ShadowMask);
 SAMPLER(samplerunity_ShadowMask);

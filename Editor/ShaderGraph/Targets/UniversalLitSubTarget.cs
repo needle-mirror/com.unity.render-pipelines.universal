@@ -91,19 +91,19 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
             var descs = context.blocks.Select(x => x.descriptor);
             // Surface Type & Blend Mode
             // These must be set per SubTarget as Sprite SubTargets override them
-            context.AddField(UniversalFields.SurfaceOpaque,         target.surfaceType == SurfaceType.Opaque);
-            context.AddField(UniversalFields.SurfaceTransparent,    target.surfaceType != SurfaceType.Opaque);
-            context.AddField(UniversalFields.BlendAdd,              target.surfaceType != SurfaceType.Opaque && target.alphaMode == AlphaMode.Additive);
-            context.AddField(Fields.BlendAlpha,                     target.surfaceType != SurfaceType.Opaque && target.alphaMode == AlphaMode.Alpha);
-            context.AddField(UniversalFields.BlendMultiply,         target.surfaceType != SurfaceType.Opaque && target.alphaMode == AlphaMode.Multiply);
-            context.AddField(UniversalFields.BlendPremultiply,      target.surfaceType != SurfaceType.Opaque && target.alphaMode == AlphaMode.Premultiply);
+            context.AddField(UniversalFields.SurfaceOpaque,       target.surfaceType == SurfaceType.Opaque);
+            context.AddField(UniversalFields.SurfaceTransparent,  target.surfaceType != SurfaceType.Opaque);
+            context.AddField(UniversalFields.BlendAdd,            target.surfaceType != SurfaceType.Opaque && target.alphaMode == AlphaMode.Additive);
+            context.AddField(Fields.BlendAlpha,                    target.surfaceType != SurfaceType.Opaque && target.alphaMode == AlphaMode.Alpha);
+            context.AddField(UniversalFields.BlendMultiply,       target.surfaceType != SurfaceType.Opaque && target.alphaMode == AlphaMode.Multiply);
+            context.AddField(UniversalFields.BlendPremultiply,    target.surfaceType != SurfaceType.Opaque && target.alphaMode == AlphaMode.Premultiply);
 
             // Lit
-            context.AddField(UniversalFields.NormalDropOffOS,       normalDropOffSpace == NormalDropOffSpace.Object);
-            context.AddField(UniversalFields.NormalDropOffTS,       normalDropOffSpace == NormalDropOffSpace.Tangent);
-            context.AddField(UniversalFields.NormalDropOffWS,       normalDropOffSpace == NormalDropOffSpace.World);
-            context.AddField(UniversalFields.SpecularSetup,         workflowMode == WorkflowMode.Specular);
-            context.AddField(UniversalFields.Normal,                descs.Contains(BlockFields.SurfaceDescription.NormalOS) ||
+            context.AddField(UniversalFields.NormalDropOffOS,     normalDropOffSpace == NormalDropOffSpace.Object);
+            context.AddField(UniversalFields.NormalDropOffTS,     normalDropOffSpace == NormalDropOffSpace.Tangent);
+            context.AddField(UniversalFields.NormalDropOffWS,     normalDropOffSpace == NormalDropOffSpace.World);
+            context.AddField(UniversalFields.SpecularSetup,       workflowMode == WorkflowMode.Specular);
+            context.AddField(UniversalFields.Normal,              descs.Contains(BlockFields.SurfaceDescription.NormalOS) ||
                 descs.Contains(BlockFields.SurfaceDescription.NormalTS) ||
                 descs.Contains(BlockFields.SurfaceDescription.NormalWS));
             // Complex Lit
@@ -369,8 +369,8 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
                 useInPreview = true,
 
                 // Template
-                passTemplatePath = UniversalTarget.kTemplatePath,
-                sharedTemplateDirectories = UniversalTarget.kSharedTemplateDirectories,
+                passTemplatePath = GenerationUtils.GetDefaultTemplatePath("PassMesh.template"),
+                sharedTemplateDirectories = GenerationUtils.GetDefaultSharedTemplateDirectories(),
 
                 // Port Mask
                 validVertexBlocks = CoreBlockMasks.Vertex,
@@ -384,12 +384,8 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
                 // Conditional State
                 renderStates = CoreRenderStates.Default,
                 pragmas  = CorePragmas.Forward,     // NOTE: SM 2.0 only GL
-                defines  = CoreDefines.UseFragmentFog,
                 keywords = LitKeywords.Forward,
                 includes = LitIncludes.Forward,
-
-                // Custom Interpolator Support
-                customInterpolators = CoreCustomInterpDescriptors.Common
             };
 
             public static PassDescriptor ForwardOnly = new PassDescriptor
@@ -401,8 +397,8 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
                 useInPreview = true,
 
                 // Template
-                passTemplatePath = UniversalTarget.kTemplatePath,
-                sharedTemplateDirectories = UniversalTarget.kSharedTemplateDirectories,
+                passTemplatePath = GenerationUtils.GetDefaultTemplatePath("PassMesh.template"),
+                sharedTemplateDirectories = GenerationUtils.GetDefaultSharedTemplateDirectories(),
 
                 // Port Mask
                 validVertexBlocks = CoreBlockMasks.Vertex,
@@ -416,12 +412,8 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
                 // Conditional State
                 renderStates = CoreRenderStates.Default,
                 pragmas  = CorePragmas.Forward,    // NOTE: SM 2.0 only GL
-                defines  = CoreDefines.UseFragmentFog,
                 keywords = LitKeywords.Forward,
                 includes = LitIncludes.Forward,
-
-                // Custom Interpolator Support
-                customInterpolators = CoreCustomInterpDescriptors.Common
             };
 
             // Deferred only in SM4.5, MRT not supported in GLES2
@@ -433,8 +425,8 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
                 lightMode = "UniversalGBuffer",
 
                 // Template
-                passTemplatePath = UniversalTarget.kTemplatePath,
-                sharedTemplateDirectories = UniversalTarget.kSharedTemplateDirectories,
+                passTemplatePath = GenerationUtils.GetDefaultTemplatePath("PassMesh.template"),
+                sharedTemplateDirectories = GenerationUtils.GetDefaultSharedTemplateDirectories(),
 
                 // Port Mask
                 validVertexBlocks = CoreBlockMasks.Vertex,
@@ -448,12 +440,8 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
                 // Conditional State
                 renderStates = CoreRenderStates.Default,
                 pragmas = CorePragmas.DOTSGBuffer,
-                defines  = CoreDefines.UseFragmentFog,
                 keywords = LitKeywords.GBuffer,
                 includes = LitIncludes.GBuffer,
-
-                // Custom Interpolator Support
-                customInterpolators = CoreCustomInterpDescriptors.Common
             };
 
             public static PassDescriptor Meta = new PassDescriptor()
@@ -464,8 +452,8 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
                 lightMode = "Meta",
 
                 // Template
-                passTemplatePath = UniversalTarget.kTemplatePath,
-                sharedTemplateDirectories = UniversalTarget.kSharedTemplateDirectories,
+                passTemplatePath = GenerationUtils.GetDefaultTemplatePath("PassMesh.template"),
+                sharedTemplateDirectories = GenerationUtils.GetDefaultSharedTemplateDirectories(),
 
                 // Port Mask
                 validVertexBlocks = CoreBlockMasks.Vertex,
@@ -479,12 +467,8 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
                 // Conditional State
                 renderStates = CoreRenderStates.Meta,
                 pragmas = CorePragmas.Default,
-                defines  = CoreDefines.UseFragmentFog,
                 keywords = LitKeywords.Meta,
                 includes = LitIncludes.Meta,
-
-                // Custom Interpolator Support
-                customInterpolators = CoreCustomInterpDescriptors.Common
             };
 
             public static readonly PassDescriptor _2D = new PassDescriptor()
@@ -494,8 +478,8 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
                 lightMode = "Universal2D",
 
                 // Template
-                passTemplatePath = UniversalTarget.kTemplatePath,
-                sharedTemplateDirectories = UniversalTarget.kSharedTemplateDirectories,
+                passTemplatePath = GenerationUtils.GetDefaultTemplatePath("PassMesh.template"),
+                sharedTemplateDirectories = GenerationUtils.GetDefaultSharedTemplateDirectories(),
 
                 // Port Mask
                 validVertexBlocks = CoreBlockMasks.Vertex,
@@ -509,9 +493,6 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
                 renderStates = CoreRenderStates.Default,
                 pragmas = CorePragmas.Instanced,
                 includes = LitIncludes._2D,
-
-                // Custom Interpolator Support
-                customInterpolators = CoreCustomInterpDescriptors.Common
             };
 
             public static readonly PassDescriptor DepthNormalOnly = new PassDescriptor()
@@ -523,8 +504,8 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
                 useInPreview = false,
 
                 // Template
-                passTemplatePath = UniversalTarget.kTemplatePath,
-                sharedTemplateDirectories = UniversalTarget.kSharedTemplateDirectories,
+                passTemplatePath = GenerationUtils.GetDefaultTemplatePath("PassMesh.template"),
+                sharedTemplateDirectories = GenerationUtils.GetDefaultSharedTemplateDirectories(),
 
                 // Port Mask
                 validVertexBlocks = CoreBlockMasks.Vertex,
@@ -539,9 +520,6 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
                 renderStates = CoreRenderStates.DepthNormalsOnly,
                 pragmas = CorePragmas.Instanced,
                 includes = CoreIncludes.DepthNormalsOnly,
-
-                // Custom Interpolator Support
-                customInterpolators = CoreCustomInterpDescriptors.Common
             };
         }
         #endregion
@@ -605,14 +583,12 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
         {
             public static readonly FieldCollection Forward = new FieldCollection()
             {
-                StructFields.Attributes.uv1,
-                StructFields.Attributes.uv2,
+                StructFields.Attributes.uv1,                            // needed for meta vertex position
                 StructFields.Varyings.positionWS,
                 StructFields.Varyings.normalWS,
                 StructFields.Varyings.tangentWS,                        // needed for vertex lighting
                 StructFields.Varyings.viewDirectionWS,
-                UniversalStructFields.Varyings.staticLightmapUV,
-                UniversalStructFields.Varyings.dynamicLightmapUV,
+                UniversalStructFields.Varyings.lightmapUV,
                 UniversalStructFields.Varyings.sh,
                 UniversalStructFields.Varyings.fogFactorAndVertexLight, // fog and vertex lighting, vert input is dependency
                 UniversalStructFields.Varyings.shadowCoord,             // shadow coord, vert input is dependency
@@ -620,14 +596,12 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
 
             public static readonly FieldCollection GBuffer = new FieldCollection()
             {
-                StructFields.Attributes.uv1,
-                StructFields.Attributes.uv2,
+                StructFields.Attributes.uv1,                            // needed for meta vertex position
                 StructFields.Varyings.positionWS,
                 StructFields.Varyings.normalWS,
                 StructFields.Varyings.tangentWS,                        // needed for vertex lighting
                 StructFields.Varyings.viewDirectionWS,
-                UniversalStructFields.Varyings.staticLightmapUV,
-                UniversalStructFields.Varyings.dynamicLightmapUV,
+                UniversalStructFields.Varyings.lightmapUV,
                 UniversalStructFields.Varyings.sh,
                 UniversalStructFields.Varyings.fogFactorAndVertexLight, // fog and vertex lighting, vert input is dependency
                 UniversalStructFields.Varyings.shadowCoord,             // shadow coord, vert input is dependency
@@ -662,7 +636,6 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
 
             public static readonly DefineCollection ComplexLit = new DefineCollection()
             {
-                {CoreKeywordDescriptors.UseFragmentFog, 1},
                 {ClearCoat, 1},
             };
         }
@@ -692,8 +665,7 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
             public static readonly KeywordCollection Forward = new KeywordCollection
             {
                 { ScreenSpaceAmbientOcclusion },
-                { CoreKeywordDescriptors.StaticLightmap },
-                { CoreKeywordDescriptors.DynamicLightmap },
+                { CoreKeywordDescriptors.Lightmap },
                 { CoreKeywordDescriptors.DirectionalLightmapCombined },
                 { CoreKeywordDescriptors.MainLightShadows },
                 { CoreKeywordDescriptors.AdditionalLights },
@@ -701,21 +673,15 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
                 { CoreKeywordDescriptors.ShadowsSoft },
                 { CoreKeywordDescriptors.LightmapShadowMixing },
                 { CoreKeywordDescriptors.ShadowsShadowmask },
-                { CoreKeywordDescriptors.LightLayers },
-                { CoreKeywordDescriptors.DebugDisplay },
             };
 
             public static readonly KeywordCollection GBuffer = new KeywordCollection
             {
-                { CoreKeywordDescriptors.StaticLightmap },
-                { CoreKeywordDescriptors.DynamicLightmap },
+                { CoreKeywordDescriptors.Lightmap },
                 { CoreKeywordDescriptors.DirectionalLightmapCombined },
                 { CoreKeywordDescriptors.MainLightShadows },
                 { CoreKeywordDescriptors.ShadowsSoft },
-                { CoreKeywordDescriptors.LightmapShadowMixing },
                 { CoreKeywordDescriptors.MixedLightingSubtractive },
-                { CoreKeywordDescriptors.LightLayers },
-                { CoreKeywordDescriptors.DebugDisplay },
                 { GBufferNormalsOct },
             };
 

@@ -1,15 +1,17 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine.Experimental.Rendering;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace UnityEngine.Rendering.Universal
 {
     /// <summary>
     /// Contains properties and helper functions that you can use when rendering.
     /// </summary>
-    public static class RenderingUtils
+    [MovedFrom("UnityEngine.Rendering.LWRP")] public static class RenderingUtils
     {
-        static List<ShaderTagId> m_LegacyShaderPassNames = new List<ShaderTagId>
+        static List<ShaderTagId> m_LegacyShaderPassNames = new List<ShaderTagId>()
         {
             new ShaderTagId("Always"),
             new ShaderTagId("ForwardBase"),
@@ -18,16 +20,6 @@ namespace UnityEngine.Rendering.Universal
             new ShaderTagId("VertexLMRGBM"),
             new ShaderTagId("VertexLM"),
         };
-
-        static AttachmentDescriptor s_EmptyAttachment = new AttachmentDescriptor(GraphicsFormat.None);
-        internal static AttachmentDescriptor emptyAttachment
-        {
-            get
-            {
-                return s_EmptyAttachment;
-            }
-        }
-
 
         static Mesh s_FullscreenMesh = null;
 
@@ -83,12 +75,6 @@ namespace UnityEngine.Rendering.Universal
                 //    (deviceType == GraphicsDeviceType.Metal || deviceType == GraphicsDeviceType.Vulkan ||
                 //     deviceType == GraphicsDeviceType.PlayStation4 || deviceType == GraphicsDeviceType.PlayStation5 || deviceType == GraphicsDeviceType.XboxOne);
             }
-        }
-
-        internal static bool SupportsLightLayers(GraphicsDeviceType type)
-        {
-            // GLES2 does not support bitwise operations.
-            return type != GraphicsDeviceType.OpenGLES2;
         }
 
         static Material s_ErrorMaterial;
@@ -343,20 +329,6 @@ namespace UnityEngine.Rendering.Universal
                 foreach (var identifier in colorBuffers)
                 {
                     if (identifier != 0)
-                        ++nonNullColorBuffers;
-                }
-            }
-            return nonNullColorBuffers;
-        }
-
-        internal static uint GetValidColorAttachmentCount(AttachmentDescriptor[] colorAttachments)
-        {
-            uint nonNullColorBuffers = 0;
-            if (colorAttachments != null)
-            {
-                foreach (var attachment in colorAttachments)
-                {
-                    if (attachment != RenderingUtils.emptyAttachment)
                         ++nonNullColorBuffers;
                 }
             }

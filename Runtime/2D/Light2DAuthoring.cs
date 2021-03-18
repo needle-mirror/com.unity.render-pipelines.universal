@@ -12,7 +12,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
             "FreeformLight.png",
             "SpriteLight.png",
             "PointLight.png",
-            "GlobalLight.png"
+            "PointLight.png"
         };
 
         private void OnDrawGizmos()

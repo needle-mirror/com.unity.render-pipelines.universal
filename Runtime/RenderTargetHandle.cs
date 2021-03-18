@@ -3,7 +3,7 @@ using UnityEngine.Scripting.APIUpdating;
 namespace UnityEngine.Rendering.Universal
 {
     // RenderTargetHandle can be thought of as a kind of ShaderProperty string hash
-    public struct RenderTargetHandle
+    [MovedFrom("UnityEngine.Rendering.LWRP")] public struct RenderTargetHandle
     {
         public int id { set; get; }
         private RenderTargetIdentifier rtid { set; get; }
@@ -49,7 +49,7 @@ namespace UnityEngine.Rendering.Universal
             {
                 return rtid;
             }
-            return new RenderTargetIdentifier(id, 0, CubemapFace.Unknown, -1);
+            return new RenderTargetIdentifier(id);
         }
 
         public bool HasInternalRenderTargetId()

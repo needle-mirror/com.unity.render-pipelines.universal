@@ -1,5 +1,4 @@
 using UnityEditor.Rendering.Universal.Internal;
-using UnityEngine.Rendering;
 
 namespace UnityEditor.Rendering.Universal
 {
@@ -7,7 +6,7 @@ namespace UnityEditor.Rendering.Universal
     {
         static readonly string defaultNewClassName = "CustomRenderPassFeature.cs";
 
-        [MenuItem("Assets/Create/Rendering/URP Renderer Feature", priority = CoreUtils.Sections.section3 + CoreUtils.Priorities.assetsCreateRenderingMenuPriority)]
+        [MenuItem("Assets/Create/Rendering/Universal Render Pipeline/Renderer Feature", priority = EditorUtils.lwrpAssetCreateMenuPriorityGroup2)]
         internal static void CreateNewRendererFeature()
         {
             string templatePath = AssetDatabase.GUIDToAssetPath(ResourceGuid.rendererTemplate);

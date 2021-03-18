@@ -23,10 +23,7 @@ CBUFFER_START(TerrainGrass)
     float3 _CameraRight, _CameraUp;
 CBUFFER_END
 
-TEXTURE2D(_MainTex);
-SAMPLER(sampler_MainTex);
-float4 _MainTex_TexelSize;
-float4 _MainTex_MipInfo;
+TEXTURE2D(_MainTex);            SAMPLER(sampler_MainTex);
 
 // ---- Grass helpers
 

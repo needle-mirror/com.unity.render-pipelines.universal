@@ -1,12 +1,11 @@
 using System.Collections.Generic;
-using UnityEditor.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Rendering;
 using UnityEngine.Scripting.APIUpdating;
 
 namespace UnityEngine.Experimental.Rendering.Universal
 {
-    public class RenderObjectsPass : ScriptableRenderPass
+    [MovedFrom("UnityEngine.Experimental.Rendering.LWRP")] public class RenderObjectsPass : ScriptableRenderPass
     {
         RenderQueueType renderQueueType;
         FilteringSettings m_FilteringSettings;
@@ -66,6 +65,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 m_ShaderTagIdList.Add(new ShaderTagId("SRPDefaultUnlit"));
                 m_ShaderTagIdList.Add(new ShaderTagId("UniversalForward"));
                 m_ShaderTagIdList.Add(new ShaderTagId("UniversalForwardOnly"));
+                m_ShaderTagIdList.Add(new ShaderTagId("LightweightForward"));
             }
 
             m_RenderStateBlock = new RenderStateBlock(RenderStateMask.Nothing);
@@ -120,31 +120,11 @@ namespace UnityEngine.Experimental.Rendering.Universal
                     }
                 }
 
-                if ((DebugHandler != null) && DebugHandler.IsActiveForCamera(ref cameraData))
-                {
-                    foreach (DebugRenderSetup debugRenderSetup in DebugHandler.CreateDebugRenderSetupEnumerable(context, cmd))
-                    {
-                        DrawingSettings debugDrawingSettings = debugRenderSetup.CreateDrawingSettings(ref renderingData, drawingSettings);
+                context.ExecuteCommandBuffer(cmd);
+                cmd.Clear();
 
-                        if (debugRenderSetup.GetRenderStateBlock(out RenderStateBlock renderStateBlock))
-                        {
-                            context.DrawRenderers(renderingData.cullResults, ref debugDrawingSettings, ref m_FilteringSettings, ref renderStateBlock);
-                        }
-                        else
-                        {
-                            context.DrawRenderers(renderingData.cullResults, ref debugDrawingSettings, ref m_FilteringSettings, ref m_RenderStateBlock);
-                        }
-                    }
-                }
-                else
-                {
-                    // Ensure we flush our command-buffer before we render...
-                    context.ExecuteCommandBuffer(cmd);
-                    cmd.Clear();
-
-                    // Render the objects...
-                    context.DrawRenderers(renderingData.cullResults, ref drawingSettings, ref m_FilteringSettings, ref m_RenderStateBlock);
-                }
+                context.DrawRenderers(renderingData.cullResults, ref drawingSettings, ref m_FilteringSettings,
+                    ref m_RenderStateBlock);
 
                 if (m_CameraSettings.overrideCamera && m_CameraSettings.restoreCamera && !cameraData.xr.enabled)
                 {

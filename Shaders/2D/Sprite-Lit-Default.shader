@@ -14,6 +14,10 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit-Default"
         [HideInInspector] _EnableExternalAlpha("Enable External Alpha", Float) = 0
     }
 
+    HLSLINCLUDE
+    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+    ENDHLSL
+
     SubShader
     {
         Tags {"Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "UniversalPipeline" }
@@ -25,24 +29,19 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit-Default"
         Pass
         {
             Tags { "LightMode" = "Universal2D" }
-
             HLSLPROGRAM
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-
             #pragma vertex CombinedShapeLightVertex
             #pragma fragment CombinedShapeLightFragment
-
             #pragma multi_compile USE_SHAPE_LIGHT_TYPE_0 __
             #pragma multi_compile USE_SHAPE_LIGHT_TYPE_1 __
             #pragma multi_compile USE_SHAPE_LIGHT_TYPE_2 __
             #pragma multi_compile USE_SHAPE_LIGHT_TYPE_3 __
-            #pragma multi_compile _ DEBUG_DISPLAY
 
             struct Attributes
             {
                 float3 positionOS   : POSITION;
                 float4 color        : COLOR;
-                float2  uv          : TEXCOORD0;
+                float2  uv           : TEXCOORD0;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -52,9 +51,6 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit-Default"
                 half4   color       : COLOR;
                 float2  uv          : TEXCOORD0;
                 half2   lightingUV  : TEXCOORD1;
-                #if defined(DEBUG_DISPLAY)
-                float3  positionWS  : TEXCOORD2;
-                #endif
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
@@ -89,12 +85,8 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit-Default"
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
                 o.positionCS = TransformObjectToHClip(v.positionOS);
-                #if defined(DEBUG_DISPLAY)
-                o.positionWS = TransformObjectToWorld(v.positionOS);
-                #endif
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-                o.lightingUV = half2(ComputeScreenPos(o.positionCS).xy);
-
+                o.lightingUV = ComputeNormalizedDeviceCoordinates(o.positionCS.xyz);
                 o.color = v.color;
                 return o;
             }
@@ -103,15 +95,10 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit-Default"
 
             half4 CombinedShapeLightFragment(Varyings i) : SV_Target
             {
-                const half4 main = i.color * SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
-                const half4 mask = SAMPLE_TEXTURE2D(_MaskTex, sampler_MaskTex, i.uv);
-                SurfaceData2D surfaceData;
-                InputData2D inputData;
+                half4 main = i.color * SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
+                half4 mask = SAMPLE_TEXTURE2D(_MaskTex, sampler_MaskTex, i.uv);
 
-                InitializeSurfaceData(main.rgb, main.a, mask, surfaceData);
-                InitializeInputData(i.uv, i.lightingUV, inputData);
-
-                return CombinedShapeLightShared(surfaceData, inputData);
+                return CombinedShapeLightShared(main, mask, i.lightingUV);
             }
             ENDHLSL
         }
@@ -119,10 +106,7 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit-Default"
         Pass
         {
             Tags { "LightMode" = "NormalsRendering"}
-
             HLSLPROGRAM
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-
             #pragma vertex NormalsRenderingVertex
             #pragma fragment NormalsRenderingFragment
 
@@ -161,7 +145,7 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit-Default"
                 o.positionCS = TransformObjectToHClip(attributes.positionOS);
                 o.uv = TRANSFORM_TEX(attributes.uv, _NormalMap);
                 o.color = attributes.color;
-                o.normalWS = -GetViewForwardDir();
+                o.normalWS = TransformObjectToWorldDir(float3(0, 0, -1));
                 o.tangentWS = TransformObjectToWorldDir(attributes.tangent.xyz);
                 o.bitangentWS = cross(o.normalWS, o.tangentWS) * attributes.tangent.w;
                 return o;
@@ -171,21 +155,17 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit-Default"
 
             half4 NormalsRenderingFragment(Varyings i) : SV_Target
             {
-                const half4 mainTex = i.color * SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
-                const half3 normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, i.uv));
-
+                half4 mainTex = i.color * SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
+                half3 normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, i.uv));
                 return NormalsRenderingShared(mainTex, normalTS, i.tangentWS.xyz, i.bitangentWS.xyz, i.normalWS.xyz);
             }
             ENDHLSL
         }
-
         Pass
         {
             Tags { "LightMode" = "UniversalForward" "Queue"="Transparent" "RenderType"="Transparent"}
 
             HLSLPROGRAM
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-
             #pragma vertex UnlitVertex
             #pragma fragment UnlitFragment
 
@@ -202,9 +182,6 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit-Default"
                 float4  positionCS      : SV_POSITION;
                 float4  color           : COLOR;
                 float2  uv              : TEXCOORD0;
-                #if defined(DEBUG_DISPLAY)
-                float3  positionWS  : TEXCOORD2;
-                #endif
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
@@ -219,9 +196,6 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit-Default"
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
                 o.positionCS = TransformObjectToHClip(attributes.positionOS);
-                #if defined(DEBUG_DISPLAY)
-                o.positionWS = TransformObjectToWorld(v.positionOS);
-                #endif
                 o.uv = TRANSFORM_TEX(attributes.uv, _MainTex);
                 o.color = attributes.color;
                 return o;
@@ -230,22 +204,6 @@ Shader "Universal Render Pipeline/2D/Sprite-Lit-Default"
             float4 UnlitFragment(Varyings i) : SV_Target
             {
                 float4 mainTex = i.color * SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
-
-                #if defined(DEBUG_DISPLAY)
-                SurfaceData2D surfaceData;
-                InputData2D inputData;
-                half4 debugColor = 0;
-
-                InitializeSurfaceData(mainTex.rgb, mainTex.a, surfaceData);
-                InitializeInputData(i.uv, inputData);
-                SETUP_DEBUG_DATA_2D(inputData, i.positionWS);
-
-                if(CanDebugOverrideOutputColor(surfaceData, inputData, debugColor))
-                {
-                    return debugColor;
-                }
-                #endif
-
                 return mainTex;
             }
             ENDHLSL
