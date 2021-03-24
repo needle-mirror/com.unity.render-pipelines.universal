@@ -8,8 +8,7 @@ using UnityEngine.Scripting.APIUpdating;
 
 namespace UnityEditor.Rendering.Universal.ShaderGUI
 {
-    [MovedFrom("UnityEditor.Rendering.LWRP.ShaderGUI")]
-    public static class ParticleGUI
+    [MovedFrom("UnityEditor.Rendering.LWRP.ShaderGUI")] public static class ParticleGUI
     {
         public enum ColorMode
         {
@@ -313,8 +312,7 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
 
             vertexStreamList = new ReorderableList(streamList, typeof(string), false, true, false, false);
 
-            vertexStreamList.drawHeaderCallback = (Rect rect) =>
-            {
+            vertexStreamList.drawHeaderCallback = (Rect rect) => {
                 EditorGUI.LabelField(rect, "Vertex Streams");
             };
 

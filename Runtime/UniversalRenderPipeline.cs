@@ -35,9 +35,9 @@ namespace UnityEngine.Rendering.Universal
             // Specialization for camera loop to avoid allocations.
             public static ProfilingSampler TryGetOrAddCameraSampler(Camera camera)
             {
-#if UNIVERSAL_PROFILING_NO_ALLOC
+                #if UNIVERSAL_PROFILING_NO_ALLOC
                 return unknownSampler;
-#else
+                #else
                 ProfilingSampler ps = null;
                 int cameraId = camera.GetHashCode();
                 bool exists = s_HashSamplerCache.TryGetValue(cameraId, out ps);
@@ -48,7 +48,7 @@ namespace UnityEngine.Rendering.Universal
                     s_HashSamplerCache.Add(cameraId, ps);
                 }
                 return ps;
-#endif
+                #endif
             }
 
             public static class Pipeline
@@ -58,33 +58,33 @@ namespace UnityEngine.Rendering.Universal
                 public static readonly ProfilingSampler beginContextRendering  = new ProfilingSampler($"{nameof(RenderPipeline)}.{nameof(BeginContextRendering)}");
                 public static readonly ProfilingSampler endContextRendering    = new ProfilingSampler($"{nameof(RenderPipeline)}.{nameof(EndContextRendering)}");
 #else
-                public static readonly ProfilingSampler beginFrameRendering = new ProfilingSampler($"{nameof(RenderPipeline)}.{nameof(BeginFrameRendering)}");
-                public static readonly ProfilingSampler endFrameRendering = new ProfilingSampler($"{nameof(RenderPipeline)}.{nameof(EndFrameRendering)}");
+                public static readonly ProfilingSampler beginFrameRendering  = new ProfilingSampler($"{nameof(RenderPipeline)}.{nameof(BeginFrameRendering)}");
+                public static readonly ProfilingSampler endFrameRendering    = new ProfilingSampler($"{nameof(RenderPipeline)}.{nameof(EndFrameRendering)}");
 #endif
                 public static readonly ProfilingSampler beginCameraRendering = new ProfilingSampler($"{nameof(RenderPipeline)}.{nameof(BeginCameraRendering)}");
-                public static readonly ProfilingSampler endCameraRendering = new ProfilingSampler($"{nameof(RenderPipeline)}.{nameof(EndCameraRendering)}");
+                public static readonly ProfilingSampler endCameraRendering   = new ProfilingSampler($"{nameof(RenderPipeline)}.{nameof(EndCameraRendering)}");
 
                 const string k_Name = nameof(UniversalRenderPipeline);
-                public static readonly ProfilingSampler initializeCameraData = new ProfilingSampler($"{k_Name}.{nameof(InitializeCameraData)}");
-                public static readonly ProfilingSampler initializeStackedCameraData = new ProfilingSampler($"{k_Name}.{nameof(InitializeStackedCameraData)}");
+                public static readonly ProfilingSampler initializeCameraData           = new ProfilingSampler($"{k_Name}.{nameof(InitializeCameraData)}");
+                public static readonly ProfilingSampler initializeStackedCameraData    = new ProfilingSampler($"{k_Name}.{nameof(InitializeStackedCameraData)}");
                 public static readonly ProfilingSampler initializeAdditionalCameraData = new ProfilingSampler($"{k_Name}.{nameof(InitializeAdditionalCameraData)}");
-                public static readonly ProfilingSampler initializeRenderingData = new ProfilingSampler($"{k_Name}.{nameof(InitializeRenderingData)}");
-                public static readonly ProfilingSampler initializeShadowData = new ProfilingSampler($"{k_Name}.{nameof(InitializeShadowData)}");
-                public static readonly ProfilingSampler initializeLightData = new ProfilingSampler($"{k_Name}.{nameof(InitializeLightData)}");
-                public static readonly ProfilingSampler getPerObjectLightFlags = new ProfilingSampler($"{k_Name}.{nameof(GetPerObjectLightFlags)}");
-                public static readonly ProfilingSampler getMainLightIndex = new ProfilingSampler($"{k_Name}.{nameof(GetMainLightIndex)}");
-                public static readonly ProfilingSampler setupPerFrameShaderConstants = new ProfilingSampler($"{k_Name}.{nameof(SetupPerFrameShaderConstants)}");
+                public static readonly ProfilingSampler initializeRenderingData        = new ProfilingSampler($"{k_Name}.{nameof(InitializeRenderingData)}");
+                public static readonly ProfilingSampler initializeShadowData           = new ProfilingSampler($"{k_Name}.{nameof(InitializeShadowData)}");
+                public static readonly ProfilingSampler initializeLightData            = new ProfilingSampler($"{k_Name}.{nameof(InitializeLightData)}");
+                public static readonly ProfilingSampler getPerObjectLightFlags         = new ProfilingSampler($"{k_Name}.{nameof(GetPerObjectLightFlags)}");
+                public static readonly ProfilingSampler getMainLightIndex              = new ProfilingSampler($"{k_Name}.{nameof(GetMainLightIndex)}");
+                public static readonly ProfilingSampler setupPerFrameShaderConstants   = new ProfilingSampler($"{k_Name}.{nameof(SetupPerFrameShaderConstants)}");
 
                 public static class Renderer
                 {
                     const string k_Name = nameof(ScriptableRenderer);
                     public static readonly ProfilingSampler setupCullingParameters = new ProfilingSampler($"{k_Name}.{nameof(ScriptableRenderer.SetupCullingParameters)}");
-                    public static readonly ProfilingSampler setup = new ProfilingSampler($"{k_Name}.{nameof(ScriptableRenderer.Setup)}");
+                    public static readonly ProfilingSampler setup                  = new ProfilingSampler($"{k_Name}.{nameof(ScriptableRenderer.Setup)}");
                 };
 
                 public static class Context
                 {
-                    const string k_Name = nameof(Context);
+                    const string k_Name = nameof(ScriptableRenderContext);
                     public static readonly ProfilingSampler submit = new ProfilingSampler($"{k_Name}.{nameof(ScriptableRenderContext.Submit)}");
                 };
 
@@ -124,7 +124,7 @@ namespace UnityEngine.Rendering.Universal
 
         // These limits have to match same limits in Input.hlsl
         internal const int k_MaxVisibleAdditionalLightsMobileShaderLevelLessThan45 = 16;
-        internal const int k_MaxVisibleAdditionalLightsMobile = 32;
+        internal const int k_MaxVisibleAdditionalLightsMobile    = 32;
         internal const int k_MaxVisibleAdditionalLightsNonMobile = 256;
         public static int maxVisibleAdditionalLights
         {
@@ -309,7 +309,7 @@ namespace UnityEngine.Rendering.Universal
                 cullingParams = cameraData.xr.cullingParams;
 
                 // Sync the FOV on the camera to match the projection from the XR device
-                if (!cameraData.camera.usePhysicalProperties)
+                if (!cameraData.camera.usePhysicalProperties && !XRGraphicsAutomatedTests.enabled)
                     cameraData.camera.fieldOfView = Mathf.Rad2Deg * Mathf.Atan(1.0f / cullingParams.stereoProjectionMatrix.m11) * 2.0f;
 
                 return true;
@@ -348,17 +348,12 @@ namespace UnityEngine.Rendering.Universal
             // Resulting in following pattern:
             // exec(cmd.start, scope.start, cmd.end) and exec(cmd.start, scope.end, cmd.end)
             CommandBuffer cmd = CommandBufferPool.Get();
-
-            // TODO: move skybox code from C++ to URP in order to remove the call to context.Submit() inside DrawSkyboxPass
-            // Until then, we can't use nested profiling scopes with XR multipass
-            CommandBuffer cmdScope = cameraData.xr.enabled ? null : cmd;
-
             ProfilingSampler sampler = Profiling.TryGetOrAddCameraSampler(camera);
-            using (new ProfilingScope(cmdScope, sampler)) // Enqueues a "BeginSample" command into the CommandBuffer cmd
+            using (new ProfilingScope(cmd, sampler)) // Enqueues a "BeginSample" command into the CommandBuffer cmd
             {
                 renderer.Clear(cameraData.renderType);
 
-                using (new ProfilingScope(cmd, Profiling.Pipeline.Renderer.setupCullingParameters))
+                using (new ProfilingScope(null, Profiling.Pipeline.Renderer.setupCullingParameters))
                 {
                     renderer.SetupCullingParameters(ref cullingParameters, ref cameraData);
                 }
@@ -382,7 +377,7 @@ namespace UnityEngine.Rendering.Universal
                     ApplyAdaptivePerformance(ref renderingData);
 #endif
 
-                using (new ProfilingScope(cmd, Profiling.Pipeline.Renderer.setup))
+                using (new ProfilingScope(null, Profiling.Pipeline.Renderer.setup))
                 {
                     renderer.Setup(context, ref renderingData);
                 }
@@ -395,7 +390,7 @@ namespace UnityEngine.Rendering.Universal
             context.ExecuteCommandBuffer(cmd); // Sends to ScriptableRenderContext all the commands enqueued since cmd.Clear, i.e the "EndSample" command
             CommandBufferPool.Release(cmd);
 
-            using (new ProfilingScope(cmd, Profiling.Pipeline.Context.submit))
+            using (new ProfilingScope(null, Profiling.Pipeline.Context.submit))
             {
                 context.Submit(); // Actually execute the commands that we previously sent to the ScriptableRenderContext context
             }
@@ -479,10 +474,6 @@ namespace UnityEngine.Rendering.Universal
             anyPostProcessingEnabled &= SystemInfo.graphicsDeviceType != GraphicsDeviceType.OpenGLES2;
 
             bool isStackedRendering = lastActiveOverlayCameraIndex != -1;
-            using (new ProfilingScope(null, Profiling.Pipeline.beginCameraRendering))
-            {
-                BeginCameraRendering(context, baseCamera);
-            }
 
             // Update volumeframework before initializing additional camera data
             UpdateVolumeFramework(baseCamera, baseCameraAdditionalData);
@@ -506,15 +497,12 @@ namespace UnityEngine.Rendering.Universal
                     xrActive = true;
                     // Helper function for updating cameraData with xrPass Data
                     m_XRSystem.UpdateCameraData(ref baseCameraData, baseCameraData.xr);
-
-                    // Update volume manager to use baseCamera's settings for XR multipass rendering.
-                    if (baseCameraData.xr.multipassId > 0)
-                    {
-                        UpdateVolumeFramework(baseCamera, baseCameraAdditionalData);
-                    }
                 }
 #endif
-
+            using (new ProfilingScope(null, Profiling.Pipeline.beginCameraRendering))
+            {
+                BeginCameraRendering(context, baseCamera);
+            }
 #if VISUAL_EFFECT_GRAPH_0_0_1_OR_NEWER
             //It should be called before culling to prepare material. When there isn't any VisualEffect component, this method has no effect.
             VFX.VFXManager.PrepareCamera(baseCamera);
@@ -984,6 +972,8 @@ namespace UnityEngine.Rendering.Universal
                     shadowData.mainLightShadowCascadesSplit = settings.cascade4Split;
                     break;
             }
+
+            shadowData.mainLightShadowCascadeBorder = settings.cascadeBorder;
 
             shadowData.supportsAdditionalLightShadows = SystemInfo.supportsShadows && settings.supportsAdditionalLightShadows && additionalLightsCastShadows;
             shadowData.additionalLightsShadowmapWidth = shadowData.additionalLightsShadowmapHeight = settings.additionalLightsShadowmapResolution;

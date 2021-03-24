@@ -13,7 +13,7 @@ namespace UnityEditor.Rendering.Universal
         {
         }
 
-        [MenuItem("Edit/Render Pipeline/Universal Render Pipeline/Upgrade Project Materials to UniversalRP Materials", priority = CoreUtils.editMenuPriority2)]
+        [MenuItem("Edit/Rendering/Materials/Convert All Built-in Materials to URP", priority = CoreUtils.Sections.section1 + CoreUtils.Priorities.editMenuPriority)]
         private static void UpgradeProjectMaterials()
         {
             List<MaterialUpgrader> upgraders = new List<MaterialUpgrader>();
@@ -22,10 +22,10 @@ namespace UnityEditor.Rendering.Universal
             HashSet<string> shaderNamesToIgnore = new HashSet<string>();
             GetShaderNamesToIgnore(ref shaderNamesToIgnore);
 
-            MaterialUpgrader.UpgradeProjectFolder(upgraders, shaderNamesToIgnore, "Upgrade to UniversalRP Materials", MaterialUpgrader.UpgradeFlags.LogMessageWhenNoUpgraderFound);
+            MaterialUpgrader.UpgradeProjectFolder(upgraders, shaderNamesToIgnore, "Upgrade to URP Materials", MaterialUpgrader.UpgradeFlags.LogMessageWhenNoUpgraderFound);
         }
 
-        [MenuItem("Edit/Render Pipeline/Universal Render Pipeline/Upgrade Selected Materials to UniversalRP Materials", priority = CoreUtils.editMenuPriority2)]
+        [MenuItem("Edit/Rendering/Materials/Convert Selected Built-in Materials to URP", priority = CoreUtils.Sections.section1 + CoreUtils.Priorities.editMenuPriority + 1)]
         private static void UpgradeSelectedMaterials()
         {
             List<MaterialUpgrader> upgraders = new List<MaterialUpgrader>();
@@ -34,7 +34,7 @@ namespace UnityEditor.Rendering.Universal
             HashSet<string> shaderNamesToIgnore = new HashSet<string>();
             GetShaderNamesToIgnore(ref shaderNamesToIgnore);
 
-            MaterialUpgrader.UpgradeSelection(upgraders, shaderNamesToIgnore, "Upgrade to UniversalRP Materials", MaterialUpgrader.UpgradeFlags.LogMessageWhenNoUpgraderFound);
+            MaterialUpgrader.UpgradeSelection(upgraders, shaderNamesToIgnore, "Upgrade to URP Materials", MaterialUpgrader.UpgradeFlags.LogMessageWhenNoUpgraderFound);
         }
 
         private static void GetShaderNamesToIgnore(ref HashSet<string> shadersToIgnore)
@@ -164,8 +164,7 @@ namespace UnityEditor.Rendering.Universal
         }
     }
 
-    [MovedFrom("UnityEditor.Rendering.LWRP")]
-    public static class SupportedUpgradeParams
+    [MovedFrom("UnityEditor.Rendering.LWRP")] public static class SupportedUpgradeParams
     {
         static public UpgradeParams diffuseOpaque = new UpgradeParams()
         {
@@ -258,8 +257,7 @@ namespace UnityEditor.Rendering.Universal
         };
     }
 
-    [MovedFrom("UnityEditor.Rendering.LWRP")]
-    public class StandardUpgrader : MaterialUpgrader
+    [MovedFrom("UnityEditor.Rendering.LWRP")] public class StandardUpgrader : MaterialUpgrader
     {
         enum LegacyRenderingMode
         {
@@ -418,8 +416,7 @@ namespace UnityEditor.Rendering.Universal
         }
     }
 
-    [MovedFrom("UnityEditor.Rendering.LWRP")]
-    public class TerrainUpgrader : MaterialUpgrader
+    [MovedFrom("UnityEditor.Rendering.LWRP")] public class TerrainUpgrader : MaterialUpgrader
     {
         public TerrainUpgrader(string oldShaderName)
         {
@@ -449,8 +446,7 @@ namespace UnityEditor.Rendering.Universal
         }
     }
 
-    [MovedFrom("UnityEditor.Rendering.LWRP")]
-    public class ParticleUpgrader : MaterialUpgrader
+    [MovedFrom("UnityEditor.Rendering.LWRP")] public class ParticleUpgrader : MaterialUpgrader
     {
         public ParticleUpgrader(string oldShaderName)
         {
@@ -518,8 +514,7 @@ namespace UnityEditor.Rendering.Universal
         }
     }
 
-    [MovedFrom("UnityEditor.Rendering.LWRP")]
-    public class AutodeskInteractiveUpgrader : MaterialUpgrader
+    [MovedFrom("UnityEditor.Rendering.LWRP")] public class AutodeskInteractiveUpgrader : MaterialUpgrader
     {
         public AutodeskInteractiveUpgrader(string oldShaderName)
         {

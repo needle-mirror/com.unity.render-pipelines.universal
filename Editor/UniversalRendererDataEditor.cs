@@ -5,13 +5,12 @@ using UnityEngine.Scripting.APIUpdating;
 
 namespace UnityEditor.Rendering.Universal
 {
-    [CustomEditor(typeof(ForwardRendererData), true)]
-    [MovedFrom("UnityEditor.Rendering.LWRP")]
-    public class ForwardRendererDataEditor : ScriptableRendererDataEditor
+    [CustomEditor(typeof(UniversalRendererData), true)]
+    [MovedFrom("UnityEditor.Rendering.LWRP")] public class UniversalRendererDataEditor : ScriptableRendererDataEditor
     {
         private static class Styles
         {
-            public static readonly GUIContent RendererTitle = new GUIContent("Forward Renderer", "Custom Forward Renderer for Universal RP.");
+            public static readonly GUIContent RendererTitle = new GUIContent("Universal Renderer", "Custom Universal Renderer for Universal RP.");
             public static readonly GUIContent PostProcessIncluded = EditorGUIUtility.TrTextContent("Enabled", "Turns post-processing on (check box selected) or off (check box cleared). If you clear this check box, Unity excludes post-processing render Passes, shaders, and textures from the build.");
             public static readonly GUIContent PostProcessLabel = new GUIContent("Data", "The asset containing references to shaders and Textures that the Renderer uses for post-processing.");
             public static readonly GUIContent FilteringLabel = new GUIContent("Filtering", "Controls filter rendering settings for this renderer.");
@@ -19,6 +18,7 @@ namespace UnityEditor.Rendering.Universal
             public static readonly GUIContent TransparentMask = new GUIContent("Transparent Layer Mask", "Controls which transparent layers this renderer draws.");
             public static readonly GUIContent LightingLabel = new GUIContent("Lighting", "Settings related to lighting and rendering paths.");
             public static readonly GUIContent RenderingModeLabel = new GUIContent("Rendering Path", "Select a rendering path.");
+            public static readonly GUIContent RenderPassLabel = new GUIContent("Native RenderPass", "Enables URP to use RenderPass API");
             public static readonly GUIContent accurateGbufferNormalsLabel = EditorGUIUtility.TrTextContent("Accurate G-buffer normals", "Normals in G-buffer use octahedron encoding/decoding. This improves visual quality but might reduce performance.");
             //public static readonly GUIContent tiledDeferredShadingLabel = EditorGUIUtility.TrTextContent("Tiled Deferred Shading (Experimental)", "Allows Tiled Deferred Shading on appropriate lights");
             public static readonly GUIContent defaultStencilStateLabel = EditorGUIUtility.TrTextContent("Default Stencil State", "Configure the stencil state for the opaque and transparent render passes.");
@@ -28,10 +28,11 @@ namespace UnityEditor.Rendering.Universal
 
         SerializedProperty m_OpaqueLayerMask;
         SerializedProperty m_TransparentLayerMask;
-#if ENABLE_RENDERING_PATH_UI
         SerializedProperty m_RenderingMode;
         SerializedProperty m_AccurateGbufferNormals;
         //SerializedProperty m_TiledDeferredShading;
+#if ENABLE_RENDER_PASS_UI
+        SerializedProperty m_UseNativeRenderPass;
 #endif
         SerializedProperty m_DefaultStencilState;
         SerializedProperty m_PostProcessData;
@@ -42,11 +43,12 @@ namespace UnityEditor.Rendering.Universal
         {
             m_OpaqueLayerMask = serializedObject.FindProperty("m_OpaqueLayerMask");
             m_TransparentLayerMask = serializedObject.FindProperty("m_TransparentLayerMask");
-#if ENABLE_RENDERING_PATH_UI
             m_RenderingMode = serializedObject.FindProperty("m_RenderingMode");
             m_AccurateGbufferNormals = serializedObject.FindProperty("m_AccurateGbufferNormals");
             // Not exposed yet.
             //m_TiledDeferredShading = serializedObject.FindProperty("m_TiledDeferredShading");
+#if ENABLE_RENDER_PASS_UI
+            m_UseNativeRenderPass = serializedObject.FindProperty("m_UseNativeRenderPass");
 #endif
             m_DefaultStencilState = serializedObject.FindProperty("m_DefaultStencilState");
             m_PostProcessData = serializedObject.FindProperty("postProcessData");
@@ -67,7 +69,6 @@ namespace UnityEditor.Rendering.Universal
             EditorGUI.indentLevel--;
             EditorGUILayout.Space();
 
-#if ENABLE_RENDERING_PATH_UI
             EditorGUILayout.LabelField(Styles.LightingLabel, EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
             EditorGUILayout.PropertyField(m_RenderingMode, Styles.RenderingModeLabel);
@@ -78,6 +79,12 @@ namespace UnityEditor.Rendering.Universal
                 //EditorGUILayout.PropertyField(m_TiledDeferredShading, Styles.tiledDeferredShadingLabel, true);
                 EditorGUI.indentLevel--;
             }
+            EditorGUI.indentLevel--;
+            EditorGUILayout.Space();
+#if ENABLE_RENDER_PASS_UI
+            EditorGUILayout.LabelField("RenderPass", EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
+            EditorGUILayout.PropertyField(m_UseNativeRenderPass, Styles.RenderPassLabel);
             EditorGUI.indentLevel--;
             EditorGUILayout.Space();
 #endif
@@ -97,10 +104,9 @@ namespace UnityEditor.Rendering.Universal
             }
             if (postProcessIncluded)
             {
-                EditorGUI.indentLevel++;
                 EditorGUILayout.PropertyField(m_PostProcessData, Styles.PostProcessLabel);
-                EditorGUI.indentLevel--;
             }
+            //m_PostProcessData.objectReferenceValue = PostProcessData.GetDefaultPostProcessData();
             EditorGUI.indentLevel--;
             EditorGUILayout.Space();
 
@@ -108,7 +114,7 @@ namespace UnityEditor.Rendering.Universal
             EditorGUI.indentLevel++;
             EditorGUILayout.PropertyField(m_DefaultStencilState, Styles.defaultStencilStateLabel, true);
             SerializedProperty overrideStencil = m_DefaultStencilState.FindPropertyRelative("overrideStencilState");
-#if ENABLE_RENDERING_PATH_UI
+
             if (overrideStencil.boolValue && m_RenderingMode.intValue == (int)RenderingMode.Deferred)
             {
                 CompareFunction stencilFunction = (CompareFunction)m_DefaultStencilState.FindPropertyRelative("stencilCompareFunction").enumValueIndex;
@@ -121,7 +127,7 @@ namespace UnityEditor.Rendering.Universal
                 if (invalidFunction || invalidOp)
                     EditorGUILayout.HelpBox(Styles.invalidStencilOverride.text, MessageType.Error, true);
             }
-#endif
+
             EditorGUI.indentLevel--;
             EditorGUILayout.Space();
 
@@ -137,7 +143,7 @@ namespace UnityEditor.Rendering.Universal
 
                 if (GUILayout.Button("Reload All"))
                 {
-                    var resources = target as ForwardRendererData;
+                    var resources = target as UniversalRendererData;
                     resources.shaders = null;
                     ResourceReloader.ReloadAllNullIn(target, UniversalRenderPipelineAsset.packagePath);
                 }

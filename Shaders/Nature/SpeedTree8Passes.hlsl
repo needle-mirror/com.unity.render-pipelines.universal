@@ -3,6 +3,7 @@
 
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/UnityGBuffer.hlsl"
+#include "SpeedTreeUtility.hlsl"
 
 struct SpeedTreeVertexInput
 {
@@ -49,6 +50,7 @@ struct SpeedTreeVertexDepthOutput
 {
     half2 uv                        : TEXCOORD0;
     half4 color                     : TEXCOORD1;
+    half3 viewDirWS                 : TEXCOORD2;
     float4 clipPos                  : SV_POSITION;
     UNITY_VERTEX_INPUT_INSTANCE_ID
     UNITY_VERTEX_OUTPUT_STEREO
@@ -91,9 +93,10 @@ struct SpeedTreeFragmentInput
 
 void InitializeData(inout SpeedTreeVertexInput input, float lodValue)
 {
-#if defined(LOD_FADE_PERCENTAGE) && (!defined(LOD_FADE_CROSSFADE) && !defined(EFFECT_BILLBOARD))
+    // smooth LOD
+    #if defined(LOD_FADE_PERCENTAGE)
         input.vertex.xyz = lerp(input.vertex.xyz, input.texcoord2.xyz, lodValue);
-#endif
+    #endif
 
     // wind
     #if defined(ENABLE_WIND) && !defined(_WINDQUALITY_NONE)
@@ -242,7 +245,7 @@ SpeedTreeVertexOutput SpeedTree8Vert(SpeedTreeVertexInput input)
     half fogFactor = ComputeFogFactor(vertexInput.positionCS.z);
     output.fogFactorAndVertexLight = half4(fogFactor, vertexLight);
 
-    half3 viewDirWS = GetWorldSpaceViewDir(vertexInput.positionWS);
+    half3 viewDirWS = GetWorldSpaceNormalizeViewDir(vertexInput.positionWS);
 
     #ifdef EFFECT_BUMP
         real sign = input.tangent.w * GetOddNegativeScale();
@@ -285,6 +288,8 @@ SpeedTreeVertexDepthOutput SpeedTree8VertDepth(SpeedTreeVertexInput input)
     output.color = input.color;
 
     VertexPositionInputs vertexInput = GetVertexPositionInputs(input.vertex.xyz);
+
+    output.viewDirWS = GetWorldSpaceNormalizeViewDir(vertexInput.positionWS);
 
 #ifdef SHADOW_CASTER
     half3 normalWS = TransformObjectToWorldNormal(input.normal);
@@ -347,7 +352,12 @@ half4 SpeedTree8Frag(SpeedTreeFragmentInput input) : SV_Target
 
 #if !defined(SHADER_QUALITY_LOW)
     #ifdef LOD_FADE_CROSSFADE // enable dithering LOD transition if user select CrossFade transition in LOD group
-        LODDitheringTransition(input.interpolated.clipPos.xy, unity_LODFade.x);
+        #ifdef EFFECT_BUMP
+            half3 viewDirectionWS = half3(input.interpolated.normalWS.w, input.interpolated.tangentWS.w, input.interpolated.bitangentWS.w);
+        #else
+            half3 viewDirectionWS = input.interpolated.viewDirWS;
+        #endif
+        LODDitheringTransition(ComputeFadeMaskSeed(viewDirectionWS, input.interpolated.clipPos.xy), unity_LODFade.x);
     #endif
 #endif
 
@@ -411,23 +421,13 @@ half4 SpeedTree8Frag(SpeedTreeFragmentInput input) : SV_Target
         occlusion = input.interpolated.color.r;
     #endif
 
-    InputData inputData;
-    InitializeInputData(input, normalTs, inputData);
-
     // subsurface (hijack emissive)
     #ifdef EFFECT_SUBSURFACE
-        Light mainLight = GetMainLight();
-    half fSubsurfaceRough = 0.7 - smoothness * 0.5;
-    half fSubsurface = D_GGX(clamp(-dot(mainLight.direction.xyz, inputData.viewDirectionWS.xyz), 0, 1), fSubsurfaceRough);
-
-    float4 shadowCoord = TransformWorldToShadowCoord(inputData.positionWS);
-    half realtimeShadow = MainLightRealtimeShadow(shadowCoord);
-    float3 tintedSubsurface = tex2D(_SubsurfaceTex, uv).rgb * _SubsurfaceColor.rgb;
-        float3 directSubsurface = tintedSubsurface.rgb * mainLight.color.rgb * fSubsurface * realtimeShadow;
-    float3 indirectSubsurface = tintedSubsurface.rgb * inputData.bakedGI.rgb * _SubsurfaceIndirect;
-    emission = directSubsurface + indirectSubsurface;
+        emission = tex2D(_SubsurfaceTex, uv).rgb * _SubsurfaceColor.rgb;
     #endif
 
+    InputData inputData;
+    InitializeInputData(input, normalTs, inputData);
 
 #ifdef GBUFFER
     // in LitForwardPass GlobalIllumination (and temporarily LightingPhysicallyBased) are called inside UniversalFragmentPBR
@@ -439,7 +439,7 @@ half4 SpeedTree8Frag(SpeedTreeFragmentInput input) : SV_Target
     MixRealtimeAndBakedGI(mainLight, inputData.normalWS, inputData.bakedGI, inputData.shadowMask);
     half3 color = GlobalIllumination(brdfData, inputData.bakedGI, occlusion, inputData.normalWS, inputData.viewDirectionWS);
 
-    return BRDFDataToGbuffer(brdfData, inputData, smoothness, emission + color);
+    return BRDFDataToGbuffer(brdfData, inputData, smoothness, emission + color, occlusion);
 
 #else
     half4 color = UniversalFragmentPBR(inputData, albedo, metallic, specular, smoothness, occlusion, emission, alpha);
@@ -458,7 +458,7 @@ half4 SpeedTree8FragDepth(SpeedTreeVertexDepthOutput input) : SV_Target
 
 #if !defined(SHADER_QUALITY_LOW)
     #ifdef LOD_FADE_CROSSFADE // enable dithering LOD transition if user select CrossFade transition in LOD group
-        LODDitheringTransition(input.clipPos.xy, unity_LODFade.x);
+        LODDitheringTransition(ComputeFadeMaskSeed(input.viewDirWS, input.clipPos.xy), unity_LODFade.x);
     #endif
 #endif
 
@@ -490,7 +490,7 @@ SpeedTreeVertexDepthNormalOutput SpeedTree8VertDepthNormal(SpeedTreeVertexInput 
 
     VertexPositionInputs vertexInput = GetVertexPositionInputs(input.vertex.xyz);
     half3 normalWS = TransformObjectToWorldNormal(input.normal);
-    half3 viewDirWS = GetWorldSpaceViewDir(vertexInput.positionWS);
+    half3 viewDirWS = GetWorldSpaceNormalizeViewDir(vertexInput.positionWS);
     #ifdef EFFECT_BUMP
         real sign = input.tangent.w * GetOddNegativeScale();
         output.normalWS.xyz = normalWS;
@@ -503,6 +503,7 @@ SpeedTreeVertexDepthNormalOutput SpeedTree8VertDepthNormal(SpeedTreeVertexInput 
         output.bitangentWS.w = viewDirWS.z;
     #else
         output.normalWS = normalWS;
+        output.viewDirWS = viewDirWS;
     #endif
 
     output.clipPos = vertexInput.positionCS;
@@ -516,7 +517,12 @@ half4 SpeedTree8FragDepthNormal(SpeedTreeDepthNormalFragmentInput input) : SV_Ta
 
     #if !defined(SHADER_QUALITY_LOW)
         #ifdef LOD_FADE_CROSSFADE // enable dithering LOD transition if user select CrossFade transition in LOD group
-            LODDitheringTransition(input.interpolated.clipPos.xy, unity_LODFade.x);
+            #ifdef EFFECT_BUMP
+                half3 viewDirectionWS = half3(input.interpolated.normalWS.w, input.interpolated.tangentWS.w, input.interpolated.bitangentWS.w);
+            #else
+                half3 viewDirectionWS = input.interpolated.viewDirWS;
+            #endif
+            LODDitheringTransition(ComputeFadeMaskSeed(viewDirectionWS, input.interpolated.clipPos.xy), unity_LODFade.x);
         #endif
     #endif
 
@@ -526,8 +532,8 @@ half4 SpeedTree8FragDepthNormal(SpeedTreeDepthNormalFragmentInput input) : SV_Ta
     half alpha = diffuse.a * input.interpolated.color.a;
     AlphaDiscard(alpha - 0.3333, 0.0);
 
-    float3 normalWS = NormalizeNormalPerPixel(input.interpolated.normalWS);
-    return float4(PackNormalOctRectEncode(TransformWorldToViewDir(normalWS, true)), 0.0, 0.0);
+    float3 normalWS = NormalizeNormalPerPixel(input.interpolated.normalWS.xyz);
+    return half4(normalWS, 0.0);
 }
 
 #endif

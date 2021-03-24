@@ -65,7 +65,7 @@
 
 
 #define TRANSFER_SHADOWS(output)\
-    output.shadowUV = ComputeNormalizedDeviceCoordinates(output.positionCS.xyz / output.positionCS.w);
+    output.shadowUV = ComputeNormalizedDeviceCoordinates(output.positionCS.xyz);
 
 #define SHAPE_LIGHT(index)\
     TEXTURE2D(_ShapeLightTexture##index);\

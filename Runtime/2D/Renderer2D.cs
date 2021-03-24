@@ -93,7 +93,6 @@ namespace UnityEngine.Experimental.Rendering.Universal
                     || cameraData.isSceneViewCamera
                     || !cameraData.isDefaultViewport
                     || cameraData.requireSrgbConversion
-                    || !m_UseDepthStencilBuffer
                     || !cameraData.resolveFinalTarget
                     || m_Renderer2DData.useCameraSortingLayerTexture
                     || !Mathf.Approximately(cameraData.renderScale, 1.0f);
@@ -186,6 +185,11 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
             ConfigureCameraTarget(colorTargetHandle.Identifier(), depthTargetHandle.Identifier());
 
+            // Add passes from Renderer Features. - NOTE: This should be reexamined in the future. Please see feedback from this PR https://github.com/Unity-Technologies/Graphics/pull/3147/files
+            isCameraColorTargetValid = true;    // This is to make it possible to call ScriptableRenderer.cameraColorTarget in the custom passes.
+            AddRenderPasses(ref renderingData);
+            isCameraColorTargetValid = false;
+
             // We generate color LUT in the base camera only. This allows us to not break render pass execution for overlay cameras.
             if (stackHasPostProcess && cameraData.renderType == CameraRenderType.Base && m_PostProcessPasses.isCreated)
             {
@@ -193,8 +197,8 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 EnqueuePass(colorGradingLutPass);
             }
 
-            var hasValidDepth = m_CreateDepthTexture || !m_CreateColorTexture || m_UseDepthStencilBuffer;
-            m_Render2DLightingPass.Setup(hasValidDepth);
+            var needsDepth = m_CreateDepthTexture || (!m_CreateColorTexture && m_UseDepthStencilBuffer);
+            m_Render2DLightingPass.Setup(needsDepth);
             m_Render2DLightingPass.ConfigureTarget(colorTargetHandle.Identifier(), depthTargetHandle.Identifier());
             EnqueuePass(m_Render2DLightingPass);
 

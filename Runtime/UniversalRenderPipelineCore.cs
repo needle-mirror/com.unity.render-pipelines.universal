@@ -9,16 +9,14 @@ using Lightmapping = UnityEngine.Experimental.GlobalIllumination.Lightmapping;
 
 namespace UnityEngine.Rendering.Universal
 {
-    [MovedFrom("UnityEngine.Rendering.LWRP")]
-    public enum MixedLightingSetup
+    [MovedFrom("UnityEngine.Rendering.LWRP")] public enum MixedLightingSetup
     {
         None,
         ShadowMask,
         Subtractive,
     };
 
-    [MovedFrom("UnityEngine.Rendering.LWRP")]
-    public struct RenderingData
+    [MovedFrom("UnityEngine.Rendering.LWRP")] public struct RenderingData
     {
         public CullingResults cullResults;
         public CameraData cameraData;
@@ -34,8 +32,7 @@ namespace UnityEngine.Rendering.Universal
         public bool postProcessingEnabled;
     }
 
-    [MovedFrom("UnityEngine.Rendering.LWRP")]
-    public struct LightData
+    [MovedFrom("UnityEngine.Rendering.LWRP")] public struct LightData
     {
         public int mainLightIndex;
         public int additionalLightsCount;
@@ -45,8 +42,7 @@ namespace UnityEngine.Rendering.Universal
         public bool supportsMixedLighting;
     }
 
-    [MovedFrom("UnityEngine.Rendering.LWRP")]
-    public struct CameraData
+    [MovedFrom("UnityEngine.Rendering.LWRP")] public struct CameraData
     {
         // Internal camera data as we are not yet sure how to expose View in stereo context.
         // We might change this API soon.
@@ -197,8 +193,7 @@ namespace UnityEngine.Rendering.Universal
         public bool resolveFinalTarget;
     }
 
-    [MovedFrom("UnityEngine.Rendering.LWRP")]
-    public struct ShadowData
+    [MovedFrom("UnityEngine.Rendering.LWRP")] public struct ShadowData
     {
         public bool supportsMainLightShadows;
         [Obsolete("Obsolete, this feature was replaced by new 'ScreenSpaceShadows' renderer feature")]
@@ -207,6 +202,12 @@ namespace UnityEngine.Rendering.Universal
         public int mainLightShadowmapHeight;
         public int mainLightShadowCascadesCount;
         public Vector3 mainLightShadowCascadesSplit;
+        /// <summary>
+        /// Main light last cascade shadow fade border.
+        /// Value represents the width of shadow fade that ranges from 0 to 1.
+        /// Where value 0 is used for no shadow fade.
+        /// </summary>
+        public float mainLightShadowCascadeBorder;
         public bool supportsAdditionalLightShadows;
         public int additionalLightsShadowmapWidth;
         public int additionalLightsShadowmapHeight;
@@ -352,7 +353,9 @@ namespace UnityEngine.Rendering.Universal
         public static readonly string _SPOT = "_SPOT";
         public static readonly string _DIRECTIONAL = "_DIRECTIONAL";
         public static readonly string _POINT = "_POINT";
-        public static readonly string _DEFERRED_ADDITIONAL_LIGHT_SHADOWS = "_DEFERRED_ADDITIONAL_LIGHT_SHADOWS";
+        public static readonly string _DEFERRED_FIRST_LIGHT = "_DEFERRED_FIRST_LIGHT";
+        public static readonly string _DEFERRED_MAIN_LIGHT = "_DEFERRED_MAIN_LIGHT";
+        public static readonly string _DEFERRED_LIGHT_SHADOWS = "_DEFERRED_LIGHT_SHADOWS";
         public static readonly string _GBUFFER_NORMALS_OCT = "_GBUFFER_NORMALS_OCT";
         public static readonly string _DEFERRED_MIXED_LIGHTING = "_DEFERRED_MIXED_LIGHTING";
         public static readonly string LIGHTMAP_ON = "LIGHTMAP_ON";
@@ -433,43 +436,6 @@ namespace UnityEngine.Rendering.Universal
             return false;
         }
 
-#if ENABLE_VR && ENABLE_VR_MODULE
-        static List<XR.XRDisplaySubsystem> displaySubsystemList = new List<XR.XRDisplaySubsystem>();
-        static XR.XRDisplaySubsystem GetFirstXRDisplaySubsystem()
-        {
-            XR.XRDisplaySubsystem display = null;
-            SubsystemManager.GetInstances(displaySubsystemList);
-
-            if (displaySubsystemList.Count > 0)
-                display = displaySubsystemList[0];
-
-            return display;
-        }
-
-        // NB: This method is required for a hotfix in Hololens to prevent creating a render texture when using a renderer
-        // with custom render pass.
-        // TODO: Remove this method and usages when we have proper dependency tracking in the pipeline to know
-        // when a render pass requires camera color as input.
-        internal static bool IsRunningHololens(CameraData cameraData)
-        {
-#if PLATFORM_WINRT
-            if (cameraData.xr.enabled)
-            {
-                var platform = Application.platform;
-                if (platform == RuntimePlatform.WSAPlayerX86 || platform == RuntimePlatform.WSAPlayerARM || platform == RuntimePlatform.WSAPlayerX64)
-                {
-                    var displaySubsystem = GetFirstXRDisplaySubsystem();
-
-                    if (displaySubsystem != null && !displaySubsystem.displayOpaque)
-                        return true;
-                }
-            }
-#endif
-            return false;
-        }
-
-#endif
-
         Comparison<Camera> cameraComparison = (camera1, camera2) => { return (int)camera1.depth - (int)camera2.depth; };
 #if UNITY_2021_1_OR_NEWER
         void SortCameras(List<Camera> cameras)
@@ -518,7 +484,7 @@ namespace UnityEngine.Rendering.Universal
                 desc = camera.targetTexture.descriptor;
                 desc.width = camera.pixelWidth;
                 desc.height = camera.pixelHeight;
-                if (camera.cameraType == CameraType.SceneView && !isHdrEnabled)
+                if (camera.cameraType == CameraType.SceneView  && !isHdrEnabled)
                 {
                     desc.graphicsFormat = renderTextureFormatDefault;
                 }
@@ -638,7 +604,7 @@ namespace UnityEngine.Rendering.Universal
                 float lightRangeSqrOverFadeRangeSqr = -lightRangeSqr / fadeRangeSqr;
                 float oneOverLightRangeSqr = 1.0f / Mathf.Max(0.0001f, lightRange * lightRange);
 
-                // On mobile and Nintendo Switch: Use the faster linear smoothing factor (SHADER_HINT_NICE_QUALITY).
+                // On untethered devices: Use the faster linear smoothing factor (SHADER_HINT_NICE_QUALITY).
                 // On other devices: Use the smoothing factor that matches the GI.
                 lightAttenuation.x = Application.isMobilePlatform || SystemInfo.graphicsDeviceType == GraphicsDeviceType.Switch ? oneOverFadeRangeSqr : oneOverLightRangeSqr;
                 lightAttenuation.y = lightRangeSqrOverFadeRangeSqr;
