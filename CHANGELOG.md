@@ -4,10 +4,21 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [7.6.0] - 2021-03-25
+
+### Added
+- Support for the PlayStation 5 platform has been added.
+
+### Fixed
+- Fixed an issue such that it is now posible to enqueue render passes at runtime.
+- Fixed an issue that caused HDR to not work correctly in XR. [case 1311161](https://issuetracker.unity3d.com/issues/xr-urp-emission-effect-does-not-work-when-in-play-mode-and-xr-is-enabled)
+- Fixed an issue where having "Opaque Texture" and MSAA enabled would cause the opaque texture to be rendered black on old Apple GPUs [case 1247423](https://issuetracker.unity3d.com/issues/urp-metal-opaque-objects-are-rendered-black-when-msaa-is-enabled)
+
 ## [7.5.3] - 2021-01-11
 
 ### Fixed
 - Fixed a case where overlay camera with output texture caused base camera not to render to screen. [case 1283225](https://issuetracker.unity3d.com/issues/game-view-renders-a-black-view-when-having-an-overlay-camera-which-had-output-texture-assigned-in-the-camera-stack)
+- Fixed material upgrader to run in batch mode [case 1305402]
 
 ## [7.5.2] - 2020-11-16
 
@@ -45,7 +56,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed an issue where URP Simple Lit shader had attributes swapped incorrectly for BaseMap and BaseColor properties.
 - Fixed an issue where camera stacking with MSAA on OpenGL resulted in a black screen. [case 1250602](https://issuetracker.unity3d.com/issues/urp-camera-stacking-results-in-black-screen-when-msaa-and-opengl-graphics-api-are-used)
 - Fixed issue with Model Importer materials using the Legacy standard shader instead of URP's Lit shader when import happens at Editor startup.
-- Fixed an issue causing shadows to be incorrectly rendered when a light was close to the shadow caster.
 - Fixed an issue where errors were generated when the Physics2D module was not included in the project's manifest.
 - Fixed an issue where the package would fail to compile if the Animation module was disabled. [case 1227068](https://issuetracker.unity3d.com/product/unity/issues/guid/1227068/)
 - Fixed camera overlay stacking adding to respect unity general reference restrictions. [case 1240788](https://issuetracker.unity3d.com/issues/urp-overlay-camera-is-missing-in-stack-list-of-the-base-camera-prefab)
