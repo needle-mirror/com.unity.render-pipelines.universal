@@ -4,6 +4,18 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [7.7.0] - 2021-04-28
+
+### Changed
+- Opacity as Density blending feature for Terrain Lit Shader is now disabled when the Terrain has more than four Terrain Layers. This is now similar to the Height-blend feature for the Terrain Lit Shader.
+
+### Fixed
+- Fixed resolution of intermediate textures when rendering to part of a render texture. [case 1261287](https://issuetracker.unity3d.com/product/unity/issues/guid/1261287/)
+- Fixed an issue when using the opaque texture with XR multipass. [case 1256604](https://issuetracker.unity3d.com/issues/urp-xr-xr-sdk-opaque-texture-is-black-in-one-eye-if-both-depth-and-opaque-texture-enabled-for-multipass-vr-in-urp)
+- Fixed an issue where SMAA did not work for OpenGL [case 1318214](https://issuetracker.unity3d.com/issues/urp-there-is-no-effect-when-using-smaa-in-urp-with-opengles-api)
+- Fixed Opacity as Density blending artifacts on Terrain that that caused Terrain to have modified splat weights of zero in some areas and greater than one in others.
+- Fixed an issue where Particle Lit shader had an incorrect fallback shader [case 1339084]
+
 ## [7.6.0] - 2021-03-25
 
 ### Added
@@ -13,6 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed an issue such that it is now posible to enqueue render passes at runtime.
 - Fixed an issue that caused HDR to not work correctly in XR. [case 1311161](https://issuetracker.unity3d.com/issues/xr-urp-emission-effect-does-not-work-when-in-play-mode-and-xr-is-enabled)
 - Fixed an issue where having "Opaque Texture" and MSAA enabled would cause the opaque texture to be rendered black on old Apple GPUs [case 1247423](https://issuetracker.unity3d.com/issues/urp-metal-opaque-objects-are-rendered-black-when-msaa-is-enabled)
+- Fixed resolution of intermediate textures when rendering to part of a render texture. [case 1261287](https://issuetracker.unity3d.com/product/unity/issues/guid/1261287/)
 
 ## [7.5.3] - 2021-01-11
 
@@ -50,6 +63,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 - Added option to enable/disable Adaptive Performance when it's package is available.
+- Added GI to SpeedTree
 
 ### Fixed
 - Fixed an issue that caused WebGL to render blank screen when Depth texture was enabled [case 1240228](https://issuetracker.unity3d.com/issues/webgl-urp-scene-is-rendered-black-in-webgl-build-when-depth-texture-is-enabled)
