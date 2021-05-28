@@ -48,7 +48,8 @@ namespace UnityEngine.Rendering.Universal
         Particle,
         Terrain,
         Sprite,
-        UnityBuiltinDefault
+        UnityBuiltinDefault,
+        SpriteMask,
     }
 
     public enum LightRenderingMode
@@ -814,6 +815,11 @@ namespace UnityEngine.Rendering.Universal
         public override Material default2DMaterial
         {
             get { return GetMaterial(DefaultMaterialType.Sprite); }
+        }
+
+        public override Material default2DMaskMaterial
+        {
+            get { return GetMaterial(DefaultMaterialType.SpriteMask); }
         }
 
         public override Shader defaultShader
