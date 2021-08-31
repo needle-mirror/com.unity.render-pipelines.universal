@@ -5,8 +5,7 @@ using UnityEngine.Scripting.APIUpdating;
 
 namespace UnityEngine.Experimental.Rendering.Universal
 {
-    [MovedFrom("UnityEngine.Experimental.Rendering.LWRP")]
-    public class RenderObjectsPass : ScriptableRenderPass
+    [MovedFrom("UnityEngine.Experimental.Rendering.LWRP")] public class RenderObjectsPass : ScriptableRenderPass
     {
         RenderQueueType renderQueueType;
         FilteringSettings m_FilteringSettings;

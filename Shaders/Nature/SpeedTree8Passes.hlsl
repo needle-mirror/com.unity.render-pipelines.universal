@@ -91,9 +91,10 @@ struct SpeedTreeFragmentInput
 
 void InitializeData(inout SpeedTreeVertexInput input, float lodValue)
 {
-#if defined(LOD_FADE_PERCENTAGE) && (!defined(LOD_FADE_CROSSFADE) && !defined(EFFECT_BILLBOARD))
+    // smooth LOD
+    #if defined(LOD_FADE_PERCENTAGE) && !defined(EFFECT_BILLBOARD)
         input.vertex.xyz = lerp(input.vertex.xyz, input.texcoord2.xyz, lodValue);
-#endif
+    #endif
 
     // wind
     #if defined(ENABLE_WIND) && !defined(_WINDQUALITY_NONE)
@@ -347,7 +348,9 @@ half4 SpeedTree8Frag(SpeedTreeFragmentInput input) : SV_Target
 
 #if !defined(SHADER_QUALITY_LOW)
     #ifdef LOD_FADE_CROSSFADE // enable dithering LOD transition if user select CrossFade transition in LOD group
-        LODDitheringTransition(input.interpolated.clipPos.xy, unity_LODFade.x);
+        #ifdef EFFECT_BILLBOARD
+            LODDitheringTransition(input.interpolated.clipPos.xy, unity_LODFade.x);
+        #endif
     #endif
 #endif
 
@@ -458,7 +461,9 @@ half4 SpeedTree8FragDepth(SpeedTreeVertexDepthOutput input) : SV_Target
 
 #if !defined(SHADER_QUALITY_LOW)
     #ifdef LOD_FADE_CROSSFADE // enable dithering LOD transition if user select CrossFade transition in LOD group
-        LODDitheringTransition(input.clipPos.xy, unity_LODFade.x);
+        #ifdef EFFECT_BILLBOARD
+            LODDitheringTransition(input.clipPos.xy, unity_LODFade.x);
+        #endif
     #endif
 #endif
 
@@ -516,7 +521,9 @@ half4 SpeedTree8FragDepthNormal(SpeedTreeDepthNormalFragmentInput input) : SV_Ta
 
     #if !defined(SHADER_QUALITY_LOW)
         #ifdef LOD_FADE_CROSSFADE // enable dithering LOD transition if user select CrossFade transition in LOD group
-            LODDitheringTransition(input.interpolated.clipPos.xy, unity_LODFade.x);
+            #ifdef EFFECT_BILLBOARD
+                LODDitheringTransition(input.interpolated.clipPos.xy, unity_LODFade.x);
+            #endif
         #endif
     #endif
 

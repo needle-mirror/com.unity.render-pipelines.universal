@@ -379,7 +379,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
         public static bool operator!=(IntPoint a, IntPoint b)
         {
-            return a.X != b.X || a.Y != b.Y;
+            return a.X != b.X  || a.Y != b.Y;
         }
 
         public override bool Equals(object obj)
@@ -530,7 +530,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
         internal const int Skip = -2;
         internal const int Unassigned = -1;
         internal const double tolerance = 1.0E-20;
-        internal static bool near_zero(double val) { return (val > -tolerance) && (val < tolerance); }
+        internal static bool near_zero(double val) {return (val > -tolerance) && (val < tolerance); }
 
         public const ClipInt loRange = 0x3FFFFFFF;
         public const ClipInt hiRange = 0x3FFFFFFFFFFFFFFFL;
@@ -1100,7 +1100,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
             else
             {
                 LocalMinima tmpLm = m_MinimaList;
-                while (tmpLm.Next != null && (newLm.Y < tmpLm.Next.Y))
+                while (tmpLm.Next != null  && (newLm.Y < tmpLm.Next.Y))
                     tmpLm = tmpLm.Next;
                 newLm.Next = tmpLm.Next;
                 tmpLm.Next = newLm;
@@ -2787,7 +2787,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
             }
 
             OutPt op1 = null;
-            for (;;)   //loop through consec. horizontal edges
+            for (;;) //loop through consec. horizontal edges
             {
                 bool IsLastHorz = (horzEdge == eLastHorz);
                 TEdge e = GetNextInAEL(horzEdge, dir);
@@ -3584,12 +3584,12 @@ namespace UnityEngine.Experimental.Rendering.Universal
         {
             if (a1 < a2)
             {
-                if (b1 < b2) { Left = Math.Max(a1, b1); Right = Math.Min(a2, b2); }
-                else { Left = Math.Max(a1, b2); Right = Math.Min(a2, b1); }
+                if (b1 < b2) {Left = Math.Max(a1, b1); Right = Math.Min(a2, b2); }
+                else {Left = Math.Max(a1, b2); Right = Math.Min(a2, b1); }
             }
             else
             {
-                if (b1 < b2) { Left = Math.Max(a2, b1); Right = Math.Min(a1, b2); }
+                if (b1 < b2) {Left = Math.Max(a2, b1); Right = Math.Min(a1, b2); }
                 else { Left = Math.Max(a2, b2); Right = Math.Min(a1, b1); }
             }
             return Left < Right;
@@ -4277,7 +4277,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
             //see http://en.wikipedia.org/wiki/Perpendicular_distance
             double A = ln1.Y - ln2.Y;
             double B = ln2.X - ln1.X;
-            double C = A * ln1.X + B * ln1.Y;
+            double C = A * ln1.X  + B * ln1.Y;
             C = A * pt.X + B * pt.Y - C;
             return (C * C) / (A * A + B * B);
         }
@@ -4925,7 +4925,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 {
                     var item = new IntPoint(Round(m_srcPoly[j].X + m_normals[k].X * m_delta),
                         Round(m_srcPoly[j].Y + m_normals[k].Y * m_delta));
-                    item.NX = m_normals[k].X; item.NY = m_normals[k].Y; item.N = j; item.D = 1;
+                    item.NX = m_normals[k].X; item.NY = m_normals[k].Y; item.N = j;  item.D = 1;
                     m_destPoly.Add(item);
                     return;
                 }

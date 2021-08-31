@@ -12,8 +12,7 @@ namespace UnityEngine.Rendering.LWRP
 
 namespace UnityEngine.Rendering.Universal
 {
-    [MovedFrom("UnityEngine.Rendering.LWRP")]
-    public class UniversalRenderPipelineEditorResources : ScriptableObject
+    [MovedFrom("UnityEngine.Rendering.LWRP")] public class UniversalRenderPipelineEditorResources : ScriptableObject
     {
         [Serializable, ReloadGroup]
         public sealed class ShaderResources

@@ -20,16 +20,14 @@ namespace UnityEngine.Rendering.LWRP
 
 namespace UnityEngine.Rendering.Universal
 {
-    [MovedFrom("UnityEngine.Rendering.LWRP")]
-    public enum ShadowQuality
+    [MovedFrom("UnityEngine.Rendering.LWRP")] public enum ShadowQuality
     {
         Disabled,
         HardShadows,
         SoftShadows,
     }
 
-    [MovedFrom("UnityEngine.Rendering.LWRP")]
-    public enum ShadowResolution
+    [MovedFrom("UnityEngine.Rendering.LWRP")] public enum ShadowResolution
     {
         _256 = 256,
         _512 = 512,
@@ -38,8 +36,7 @@ namespace UnityEngine.Rendering.Universal
         _4096 = 4096
     }
 
-    [MovedFrom("UnityEngine.Rendering.LWRP")]
-    public enum MsaaQuality
+    [MovedFrom("UnityEngine.Rendering.LWRP")] public enum MsaaQuality
     {
         Disabled = 1,
         _2x = 2,
@@ -47,8 +44,7 @@ namespace UnityEngine.Rendering.Universal
         _8x = 8
     }
 
-    [MovedFrom("UnityEngine.Rendering.LWRP")]
-    public enum Downsampling
+    [MovedFrom("UnityEngine.Rendering.LWRP")] public enum Downsampling
     {
         None,
         _2xBilinear,
@@ -65,16 +61,14 @@ namespace UnityEngine.Rendering.Universal
         UnityBuiltinDefault
     }
 
-    [MovedFrom("UnityEngine.Rendering.LWRP")]
-    public enum LightRenderingMode
+    [MovedFrom("UnityEngine.Rendering.LWRP")] public enum LightRenderingMode
     {
         Disabled = 0,
         PerVertex = 2,
         PerPixel = 1,
     }
 
-    [MovedFrom("UnityEngine.Rendering.LWRP")]
-    public enum ShaderVariantLogLevel
+    [MovedFrom("UnityEngine.Rendering.LWRP")] public enum ShaderVariantLogLevel
     {
         Disabled,
         OnlyUniversalRPShaders,
@@ -88,8 +82,7 @@ namespace UnityEngine.Rendering.Universal
         Profiling,
     }
 
-    [MovedFrom("UnityEngine.Rendering.LWRP")]
-    public enum RendererType
+    [MovedFrom("UnityEngine.Rendering.LWRP")] public enum RendererType
     {
         Custom,
         ForwardRenderer,

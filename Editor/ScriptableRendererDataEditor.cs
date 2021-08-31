@@ -10,8 +10,7 @@ using Object = UnityEngine.Object;
 namespace UnityEditor.Rendering.Universal
 {
     [CustomEditor(typeof(ScriptableRendererData), true)]
-    [MovedFrom("UnityEditor.Rendering.LWRP")]
-    public class ScriptableRendererDataEditor : Editor
+    [MovedFrom("UnityEditor.Rendering.LWRP")] public class ScriptableRendererDataEditor : Editor
     {
         class Styles
         {

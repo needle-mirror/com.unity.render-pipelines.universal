@@ -182,12 +182,12 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
         {
             var descs = context.blocks.Select(x => x.descriptor);
             // Core fields
-            context.AddField(Fields.GraphVertex, descs.Contains(BlockFields.VertexDescription.Position) ||
+            context.AddField(Fields.GraphVertex,            descs.Contains(BlockFields.VertexDescription.Position) ||
                 descs.Contains(BlockFields.VertexDescription.Normal) ||
                 descs.Contains(BlockFields.VertexDescription.Tangent));
             context.AddField(Fields.GraphPixel);
-            context.AddField(Fields.AlphaClip, alphaClip);
-            context.AddField(Fields.DoubleSided, twoSided);
+            context.AddField(Fields.AlphaClip,              alphaClip);
+            context.AddField(Fields.DoubleSided,            twoSided);
 
             // SubTarget fields
             m_ActiveSubTarget.value.GetFields(ref context);
