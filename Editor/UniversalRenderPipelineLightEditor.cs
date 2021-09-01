@@ -15,25 +15,11 @@ namespace UnityEditor.Rendering.Universal
             serializedLight = new UniversalRenderPipelineSerializedLight(serializedObject, settings);
         }
 
-        // IsPreset is an internal API - lets reuse the usable part of this function
-        // 93 is a "magic number" and does not represent a combination of other flags here
-        internal static bool IsPresetEditor(UnityEditor.Editor editor)
-        {
-            return (int)((editor.target as Component).gameObject.hideFlags) == 93;
-        }
-
         public override void OnInspectorGUI()
         {
             serializedLight.Update();
 
-            if (IsPresetEditor(this))
-            {
-                UniversalRenderPipelineLightUI.PresetInspector.Draw(serializedLight, this);
-            }
-            else
-            {
-                UniversalRenderPipelineLightUI.Inspector.Draw(serializedLight, this);
-            }
+            UniversalRenderPipelineLightUI.Inspector.Draw(serializedLight, this);
 
             serializedLight.Apply();
         }
@@ -43,8 +29,7 @@ namespace UnityEditor.Rendering.Universal
             if (!(GraphicsSettings.currentRenderPipeline is UniversalRenderPipelineAsset))
                 return;
 
-            if (!(target is Light light) || light == null)
-                return;
+            Light light = target as Light;
 
             switch (light.type)
             {

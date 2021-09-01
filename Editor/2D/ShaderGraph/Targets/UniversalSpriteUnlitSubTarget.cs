@@ -108,11 +108,9 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
                     passes = new PassCollection
                     {
                         { SpriteUnlitPasses.Unlit },
-                        // Currently neither of these passes (selection/picking) can be last for the game view for
-                        // UI shaders to render correctly. Verify [1352225] before changing this order.
+                        { SpriteUnlitPasses.Forward },
                         { CorePasses._2DSceneSelection(target) },
                         { CorePasses._2DScenePicking(target) },
-                        { SpriteUnlitPasses.Forward },
                     },
                 };
                 return result;

@@ -19,9 +19,7 @@ namespace UnityEditor.Rendering.Universal
         public SerializedProperty lightLayerName6;
         public SerializedProperty lightLayerName7;
 
-        public SerializedProperty stripDebugVariants;
-        public SerializedProperty stripUnusedPostProcessingVariants;
-        public SerializedProperty stripUnusedVariants;
+        public SerializedProperty supportRuntimeDebugDisplay;
 
         public SerializedUniversalRenderPipelineGlobalSettings(SerializedObject serializedObject)
         {
@@ -46,9 +44,7 @@ namespace UnityEditor.Rendering.Universal
             lightLayerName6 = serializedObject.Find((UniversalRenderPipelineGlobalSettings s) => s.lightLayerName6);
             lightLayerName7 = serializedObject.Find((UniversalRenderPipelineGlobalSettings s) => s.lightLayerName7);
 
-            stripDebugVariants = serializedObject.FindProperty("m_StripDebugVariants");
-            stripUnusedPostProcessingVariants = serializedObject.FindProperty("m_StripUnusedPostProcessingVariants");
-            stripUnusedVariants = serializedObject.FindProperty("m_StripUnusedVariants");
+            supportRuntimeDebugDisplay = serializedObject.Find((UniversalRenderPipelineGlobalSettings s) => s.supportRuntimeDebugDisplay);
         }
     }
 }

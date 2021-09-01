@@ -83,10 +83,8 @@ namespace UnityEngine.Rendering.Universal
     public enum ShaderVariantLogLevel
     {
         Disabled,
-        [InspectorName("Only URP Shaders")]
         OnlyUniversalRPShaders,
-        [InspectorName("All Shaders")]
-        AllShaders
+        AllShaders,
     }
 
     [Obsolete("PipelineDebugLevel is unused and has no effect.", false)]
@@ -277,7 +275,7 @@ namespace UnityEngine.Rendering.Universal
         static void CreateUniversalPipeline()
         {
             ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, CreateInstance<CreateUniversalPipelineAsset>(),
-                "New Universal Render Pipeline Asset.asset", null, null);
+                "UniversalRenderPipelineAsset.asset", null, null);
         }
 
         internal static ScriptableRendererData CreateRendererAsset(string path, RendererType type, bool relativePath = true, string suffix = "Renderer")
@@ -362,10 +360,6 @@ namespace UnityEngine.Rendering.Universal
             {
                 // If previous version and current version are miss-matched then we are waiting for the upgrader to kick in
                 if (k_AssetPreviousVersion != k_AssetVersion)
-                    return null;
-
-                if (m_RendererDataList[m_DefaultRendererIndex].GetType().ToString()
-                    .Contains("Universal.ForwardRendererData"))
                     return null;
 
                 Debug.LogError(
@@ -676,7 +670,7 @@ namespace UnityEngine.Rendering.Universal
         public LightRenderingMode additionalLightsRenderingMode
         {
             get { return m_AdditionalLightsRenderingMode; }
-            internal set { m_AdditionalLightsRenderingMode = value; }
+            internal set { m_AdditionalLightsRenderingMode = value;}
         }
 
         public int maxAdditionalLightsCount

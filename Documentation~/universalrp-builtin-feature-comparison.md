@@ -45,11 +45,11 @@ This table provides an overview of the current features supported in the Univers
 | *Shadow Resolve Type*<br/>Lighting Pass<br/>Screen Space Pass | <br/>Yes<br/>Yes     | <br/>Yes<br/>No                       |
 | Shadow Bias                                                  | Constant clip space offset + normal bias                     | Offsets shadowmap texels in the light direction + normal bias|
 | ***Lightmapping***                 |                                                              |                                                              |
-| Enlighten Baked Global Illumination              | Yes                                              |Yes                                                          |
+| Enlighten                                                    | Yes                                                          | Yes                                                          |
 | Progressive Lightmapper, CPU                                              | Yes                                                          | Yes                                                          |
 | Progressive Lightmapper, GPU                                              | Yes                                                          | Yes                                                          |
-| ***Real-time Global Illumination***                 |                                                              |                                                              |
-| Enlighten Realtime Global Illumination                                                    | Yes                                                          | Yes                                                          |
+| ***Realtime Global Illumination***                 |                                                              |                                                              |
+| Enlighten                                                    | Yes                                                          | Not supported                                                          |
 | ***Mixed Lighting Mode***                                         |                                                              |                                                              |
 | Subtractive                                                  | Yes                                                          | Yes                                                          |
 | Baked Indirect                                               | Yes                                                          | Yes                                                          |

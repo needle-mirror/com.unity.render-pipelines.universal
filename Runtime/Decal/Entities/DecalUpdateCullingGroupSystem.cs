@@ -26,8 +26,8 @@ namespace UnityEngine.Rendering.Universal
 
         public override void SetCapacity(int newCapacity)
         {
-            ArrayExtensions.ResizeArray(ref visibleDecalIndexArray, newCapacity);
-            visibleDecalIndices.ResizeArray(newCapacity);
+            ResizeArray(ref visibleDecalIndexArray, newCapacity);
+            ResizeNativeArray(ref visibleDecalIndices, newCapacity);
             if (cullingGroups == null)
                 cullingGroups = new CullingGroup();
             capacity = newCapacity;

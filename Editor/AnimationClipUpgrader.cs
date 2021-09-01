@@ -302,7 +302,7 @@ namespace UnityEditor.Rendering
 
             foreach (var gameObject in gameObjects)
             {
-                var clips = AnimationUtility.GetAnimationClips(gameObject).Select(clip => (IAnimationClip)(AnimationClipProxy)clip);
+                var clips = AnimationUtility.GetAnimationClips(gameObject).Select(clip =>  (IAnimationClip)(AnimationClipProxy)clip);
 
                 GatherClipsUsageForAnimatedHierarchy(
                     gameObject.transform, clips, clipData, allUpgradePathsToNewShaders, upgradePathsUsedByMaterials

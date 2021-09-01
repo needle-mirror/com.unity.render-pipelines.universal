@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor.Rendering;
-using UnityEditor.Rendering.Universal;
-using UnityEditor.ShaderGraph;
-using UnityEditor.ShaderGraph.Drawing;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEditor.Rendering.Universal;
+using UnityEditor.ShaderGraph;
+using RenderQueue = UnityEngine.Rendering.RenderQueue;
 using UnityEngine.Rendering.Universal;
 using static Unity.Rendering.Universal.ShaderUtils;
-using RenderQueue = UnityEngine.Rendering.RenderQueue;
+using System.Linq;
+using UnityEditor.ShaderGraph.Drawing;
 
 namespace UnityEditor
 {
@@ -18,7 +18,6 @@ namespace UnityEditor
         #region EnumsAndClasses
 
         [Flags]
-        [URPHelpURL("shaders-in-universalrp")]
         protected enum Expandable
         {
             SurfaceOptions = 1 << 0,
@@ -129,8 +128,6 @@ namespace UnityEditor
 
             public static readonly GUIContent queueControl = EditorGUIUtility.TrTextContent("Queue Control",
                 "Controls whether render queue is automatically set based on material surface type, or explicitly set by the user.");
-
-            public static readonly GUIContent documentationIcon = EditorGUIUtility.TrIconContent("_Help", $"Open Reference for URP Shaders.");
         }
 
         #endregion
@@ -179,7 +176,6 @@ namespace UnityEditor
         #endregion
 
         private const int queueOffsetRange = 50;
-
         ////////////////////////////////////
         // General Functions              //
         ////////////////////////////////////
@@ -241,24 +237,15 @@ namespace UnityEditor
             ShaderPropertiesGUI(material);
         }
 
-        protected virtual uint materialFilter => uint.MaxValue;
-
         public virtual void OnOpenGUI(Material material, MaterialEditor materialEditor)
         {
-            var filter = (Expandable)materialFilter;
-
             // Generate the foldouts
-            if (filter.HasFlag(Expandable.SurfaceOptions))
-                m_MaterialScopeList.RegisterHeaderScope(Styles.SurfaceOptions, (uint)Expandable.SurfaceOptions, DrawSurfaceOptions);
+            m_MaterialScopeList.RegisterHeaderScope(Styles.SurfaceOptions, (uint)Expandable.SurfaceOptions, DrawSurfaceOptions);
+            m_MaterialScopeList.RegisterHeaderScope(Styles.SurfaceInputs, (uint)Expandable.SurfaceInputs, DrawSurfaceInputs);
 
-            if (filter.HasFlag(Expandable.SurfaceInputs))
-                m_MaterialScopeList.RegisterHeaderScope(Styles.SurfaceInputs, (uint)Expandable.SurfaceInputs, DrawSurfaceInputs);
+            FillAdditionalFoldouts(m_MaterialScopeList);
 
-            if (filter.HasFlag(Expandable.Details))
-                FillAdditionalFoldouts(m_MaterialScopeList);
-
-            if (filter.HasFlag(Expandable.Advanced))
-                m_MaterialScopeList.RegisterHeaderScope(Styles.AdvancedLabel, (uint)Expandable.Advanced, DrawAdvancedOptions);
+            m_MaterialScopeList.RegisterHeaderScope(Styles.AdvancedLabel, (uint)Expandable.Advanced, DrawAdvancedOptions);
         }
 
         public void ShaderPropertiesGUI(Material material)

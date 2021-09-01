@@ -26,7 +26,7 @@ namespace UnityEngine.Rendering.Universal
 
         private static void OnPlayModeStateChanged(PlayModeStateChange state)
         {
-            if (s_ShadowCasterGroups != null && (state == PlayModeStateChange.ExitingEditMode || state == PlayModeStateChange.ExitingPlayMode))
+            if (state == PlayModeStateChange.ExitingEditMode || state == PlayModeStateChange.ExitingPlayMode)
                 s_ShadowCasterGroups.Clear();
         }
 

@@ -58,23 +58,23 @@ namespace UnityEngine.Rendering.Universal
 
         public override void SetCapacity(int newCapacity)
         {
-            decalToWorlds.ResizeArray(newCapacity);
-            normalToWorlds.ResizeArray(newCapacity);
-            sizeOffsets.ResizeArray(newCapacity);
-            drawDistances.ResizeArray(newCapacity);
-            angleFades.ResizeArray(newCapacity);
-            uvScaleBias.ResizeArray(newCapacity);
-            layerMasks.ResizeArray(newCapacity);
-            sceneLayerMasks.ResizeArray(newCapacity);
-            fadeFactors.ResizeArray(newCapacity);
-            boundingSpheres.ResizeArray(newCapacity);
-            scaleModes.ResizeArray(newCapacity);
-            positions.ResizeArray(newCapacity);
-            rotation.ResizeArray(newCapacity);
-            scales.ResizeArray(newCapacity);
-            dirty.ResizeArray(newCapacity);
+            ResizeNativeArray(ref decalToWorlds, newCapacity);
+            ResizeNativeArray(ref normalToWorlds, newCapacity);
+            ResizeNativeArray(ref sizeOffsets, newCapacity);
+            ResizeNativeArray(ref drawDistances, newCapacity);
+            ResizeNativeArray(ref angleFades, newCapacity);
+            ResizeNativeArray(ref uvScaleBias, newCapacity);
+            ResizeNativeArray(ref layerMasks, newCapacity);
+            ResizeNativeArray(ref sceneLayerMasks, newCapacity);
+            ResizeNativeArray(ref fadeFactors, newCapacity);
+            ResizeNativeArray(ref boundingSpheres, newCapacity);
+            ResizeNativeArray(ref scaleModes, newCapacity);
+            ResizeNativeArray(ref positions, newCapacity);
+            ResizeNativeArray(ref rotation, newCapacity);
+            ResizeNativeArray(ref scales, newCapacity);
+            ResizeNativeArray(ref dirty, newCapacity);
 
-            ArrayExtensions.ResizeArray(ref boundingSphereArray, newCapacity);
+            ResizeArray(ref boundingSphereArray, newCapacity);
             capacity = newCapacity;
         }
 
@@ -174,7 +174,7 @@ namespace UnityEngine.Rendering.Universal
                     decalToWorlds = cachedChunk.decalToWorlds,
                     normalToWorlds = cachedChunk.normalToWorlds,
                     boundingSpheres = cachedChunk.boundingSpheres,
-                    minDistance = System.Single.Epsilon,
+                    minDistance = 0.0001f,
                 };
 
                 var handle = updateTransformJob.Schedule(entityChunk.transformAccessArray);
