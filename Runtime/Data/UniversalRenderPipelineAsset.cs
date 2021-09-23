@@ -208,7 +208,7 @@ namespace UnityEngine.Rendering.Universal
         [SerializeField] bool m_SupportsDynamicBatching = false;
         [SerializeField] bool m_MixedLightingSupported = true;
         [SerializeField] bool m_SupportsLightLayers = false;
-        [SerializeField][Obsolete] PipelineDebugLevel m_DebugLevel;
+        [SerializeField] [Obsolete] PipelineDebugLevel m_DebugLevel;
 
         // Adaptive performance settings
         [SerializeField] bool m_UseAdaptivePerformance = true;

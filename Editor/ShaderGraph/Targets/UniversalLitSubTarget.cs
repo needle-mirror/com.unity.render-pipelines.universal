@@ -69,18 +69,11 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
 
             var universalRPType = typeof(UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset);
             if (!context.HasCustomEditorForRenderPipeline(universalRPType))
-            {
-                var gui = typeof(ShaderGraphLitGUI);
-#if HAS_VFX_GRAPH
-                if (TargetsVFX())
-                    gui = typeof(VFXShaderGraphLitGUI);
-#endif
-                context.AddCustomEditorForRenderPipeline(gui.FullName, universalRPType);
-            }
+                context.AddCustomEditorForRenderPipeline(typeof(ShaderGraphLitGUI).FullName, universalRPType);
 
             // Process SubShaders
-            context.AddSubShader(PostProcessSubShader(SubShaders.LitComputeDotsSubShader(target, workflowMode, target.renderType, target.renderQueue, complexLit)));
-            context.AddSubShader(PostProcessSubShader(SubShaders.LitGLESSubShader(target, workflowMode, target.renderType, target.renderQueue, complexLit)));
+            context.AddSubShader(SubShaders.LitComputeDotsSubShader(target, workflowMode, target.renderType, target.renderQueue, complexLit));
+            context.AddSubShader(SubShaders.LitGLESSubShader(target, workflowMode, target.renderType, target.renderQueue, complexLit));
         }
 
         public override void ProcessPreviewMaterial(Material material)
@@ -114,8 +107,6 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
 
         public override void GetFields(ref TargetFieldContext context)
         {
-            base.GetFields(ref context);
-
             var descs = context.blocks.Select(x => x.descriptor);
 
             // Lit -- always controlled by subtarget
@@ -309,12 +300,9 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
                 else
                     result.passes.Add(PassVariant(LitPasses.DepthNormal(target), CorePragmas.DOTSInstanced));
                 result.passes.Add(PassVariant(LitPasses.Meta(target), CorePragmas.DOTSDefault));
-                // Currently neither of these passes (selection/picking) can be last for the game view for
-                // UI shaders to render correctly. Verify [1352225] before changing this order.
+                result.passes.Add(PassVariant(LitPasses._2D(target), CorePragmas.DOTSDefault));
                 result.passes.Add(PassVariant(CorePasses.SceneSelection(target), CorePragmas.DOTSDefault));
                 result.passes.Add(PassVariant(CorePasses.ScenePicking(target), CorePragmas.DOTSDefault));
-
-                result.passes.Add(PassVariant(LitPasses._2D(target), CorePragmas.DOTSDefault));
 
                 return result;
             }
@@ -353,12 +341,9 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
                 else
                     result.passes.Add(CorePasses.DepthNormal(target));
                 result.passes.Add(LitPasses.Meta(target));
-                // Currently neither of these passes (selection/picking) can be last for the game view for
-                // UI shaders to render correctly. Verify [1352225] before changing this order.
+                result.passes.Add(LitPasses._2D(target));
                 result.passes.Add(CorePasses.SceneSelection(target));
                 result.passes.Add(CorePasses.ScenePicking(target));
-
-                result.passes.Add(LitPasses._2D(target));
 
                 return result;
             }

@@ -413,7 +413,7 @@ namespace UnityEditor.Rendering
 
             // release UnityObject references
             s_RendererBuffer.Clear();
-            foreach (var(_, materials) in s_RenderersByPath.Values)
+            foreach (var (_, materials) in s_RenderersByPath.Values)
                 ListPool<IMaterial>.Release(materials);
             s_RenderersByPath.Clear();
         }

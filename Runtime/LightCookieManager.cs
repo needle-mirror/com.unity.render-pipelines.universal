@@ -31,8 +31,6 @@ namespace UnityEngine.Rendering.Universal
 
         private enum LightCookieShaderFormat
         {
-            None = -1,
-
             RGB = 0,
             Alpha = 1,
             Red = 2
@@ -202,7 +200,7 @@ namespace UnityEngine.Rendering.Universal
             private readonly int m_Start;
             private readonly int m_Length;
 
-            public WorkSlice(T[] src, int srcLen = -1) : this(src, 0, srcLen) {}
+            public WorkSlice(T[] src, int srcLen = -1) : this(src, 0, srcLen) { }
 
             public WorkSlice(T[] src, int srcStart, int srcLen = -1)
             {
@@ -297,7 +295,7 @@ namespace UnityEngine.Rendering.Universal
 
                     unsafe
                     {
-                        fixed(float* floatData = m_Data)
+                        fixed (float* floatData = m_Data)
                         {
                             uint* uintElem = (uint*)&floatData[elemIndex];
                             bool val = ((*uintElem) & (1u << bitOffset)) != 0u;
@@ -310,7 +308,7 @@ namespace UnityEngine.Rendering.Universal
                     GetElementIndexAndBitOffset(index, out var elemIndex, out var bitOffset);
                     unsafe
                     {
-                        fixed(float* floatData = m_Data)
+                        fixed (float* floatData = m_Data)
                         {
                             uint* uintElem = (uint*)&floatData[elemIndex];
                             if (value == true)
@@ -581,13 +579,6 @@ namespace UnityEngine.Rendering.Universal
                 cmd.SetGlobalTexture(ShaderProperty.mainLightTexture, cookieTexture);
                 cmd.SetGlobalMatrix(ShaderProperty.mainLightWorldToLight, cookieMatrix);
                 cmd.SetGlobalFloat(ShaderProperty.mainLightCookieTextureFormat, cookieFormat);
-            }
-            else
-            {
-                // Make sure we erase stale data in case the main light is disabled but cookie system is enabled (for additional lights).
-                cmd.SetGlobalTexture(ShaderProperty.mainLightTexture, Texture2D.whiteTexture);
-                cmd.SetGlobalMatrix(ShaderProperty.mainLightWorldToLight, Matrix4x4.identity);
-                cmd.SetGlobalFloat(ShaderProperty.mainLightCookieTextureFormat, (float)LightCookieShaderFormat.None);
             }
 
             return isMainLightCookieEnabled;

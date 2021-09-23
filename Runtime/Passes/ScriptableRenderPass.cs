@@ -436,7 +436,7 @@ namespace UnityEngine.Rendering.Universal
         /// <seealso cref="ConfigureTarget"/>
         /// <seealso cref="ConfigureClear"/>
         public virtual void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
-        {}
+        { }
 
         /// <summary>
         /// This method is called by the renderer before executing the render pass.
@@ -449,7 +449,7 @@ namespace UnityEngine.Rendering.Universal
         /// <seealso cref="ConfigureTarget"/>
         /// <seealso cref="ConfigureClear"/>
         public virtual void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
-        {}
+        { }
 
 
         /// <summary>
@@ -472,7 +472,7 @@ namespace UnityEngine.Rendering.Universal
         /// </summary>
         /// <param name="cmd">Use this CommandBuffer to cleanup any generated data</param>
         public virtual void OnFinishCameraStackRendering(CommandBuffer cmd)
-        {}
+        { }
 
         /// <summary>
         /// Execute the pass. This is where custom rendering occurs. Specific details are left to the implementation
@@ -559,12 +559,12 @@ namespace UnityEngine.Rendering.Universal
             return settings;
         }
 
-        public static bool operator<(ScriptableRenderPass lhs, ScriptableRenderPass rhs)
+        public static bool operator <(ScriptableRenderPass lhs, ScriptableRenderPass rhs)
         {
             return lhs.renderPassEvent < rhs.renderPassEvent;
         }
 
-        public static bool operator>(ScriptableRenderPass lhs, ScriptableRenderPass rhs)
+        public static bool operator >(ScriptableRenderPass lhs, ScriptableRenderPass rhs)
         {
             return lhs.renderPassEvent > rhs.renderPassEvent;
         }

@@ -70,7 +70,7 @@ namespace UnityEngine.Rendering.Universal
                 // In a Player, we do not need to worry about those changes as we only support loading one
                 if (cachedInstance == null)
 #endif
-                cachedInstance = GraphicsSettings.GetSettingsForRenderPipeline<UniversalRenderPipeline>() as UniversalRenderPipelineGlobalSettings;
+                    cachedInstance = GraphicsSettings.GetSettingsForRenderPipeline<UniversalRenderPipeline>() as UniversalRenderPipelineGlobalSettings;
                 return cachedInstance;
             }
         }

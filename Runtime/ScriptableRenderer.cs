@@ -1319,8 +1319,8 @@ namespace UnityEngine.Rendering.Universal
             CoreUtils.SetRenderTarget(cmd, colorAttachments, depthAttachment, clearFlag, clearColor);
         }
 
-        internal virtual void SwapColorBuffer(CommandBuffer cmd) {}
-        internal virtual void EnableSwapBufferMSAA(bool enable) {}
+        internal virtual void SwapColorBuffer(CommandBuffer cmd) { }
+        internal virtual void EnableSwapBufferMSAA(bool enable) { }
 
         [Conditional("UNITY_EDITOR")]
         void DrawGizmos(ScriptableRenderContext context, Camera camera, GizmoSubset gizmoSubset)
@@ -1485,7 +1485,7 @@ namespace UnityEngine.Rendering.Universal
                 public BlockRange GetEnumerator() { return this; }
                 public bool MoveNext() { return ++m_Current < m_End; }
                 public int Current { get => m_Current; }
-                public void Dispose() {}
+                public void Dispose() { }
             }
 
             public BlockRange GetRange(int index)

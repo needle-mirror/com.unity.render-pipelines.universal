@@ -12,7 +12,7 @@ namespace UnityEditor.Rendering.Universal
     {
         public override string name => "Material and Material Reference Upgrade";
         public override string info => "This will upgrade all materials and material references.";
-        public override int priority => - 1000;
+        public override int priority => -1000;
         public override Type container => typeof(BuiltInToURP2DConverterContainer);
 
         List<string> m_AssetsToConvert = new List<string>();

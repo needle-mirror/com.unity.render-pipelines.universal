@@ -4,14 +4,10 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [12.1.0] - 2021-09-23
-
-### Changed
-- URP will no longer render via an intermediate texture unless actively required by a Renderer Feature. See the upgrade guide for compatibility options and how assets are upgraded.
-
-### Fixed
-- Fixed a Universal Targets in ShaderGraph not rendering correctly in game view [1352225]
-- MaterialReimporter.ReimportAllMaterials and MaterialReimporter.ReimportAllHDShaderGraphs now batch the asset database changes to improve performance.
+## [13.0.0] - 2021-09-01
+### Added
+- URP global setting for stripping post processing shader variants.
+- URP global setting for stripping off shader variants.
 
 ## [12.0.0] - 2021-01-11
 ### Added
@@ -49,8 +45,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - XR: Added Late Latching support to reduce VR latency (Quest).
 - Fixed incorrect shadow fade in deferred rendering mode.
 - Added a help button on material editor to show the shader documentation page
-- URP global setting for stripping post processing shader variants.
-- URP global setting for stripping off shader variants.
 
 ### Changed
 - Moved fog evaluation from vertex shader to pixel shader. This improves rendering of fog for big triangles and fog quality. This can change the look of the fog slightly.
@@ -88,7 +82,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - URP Asset Inspector - `General` section has been renamed to `Rendering`.
 - Refactored some of the array resizing code around decal projector rendering to use new APIs in render core
 - UniversalRendererData and ForwardRendererData GUIDs have been reversed so that users coming from 2019LTS, 2020LTS and 2021.1 have a smooth upgrade path, you may encounter issues coming from 2021.2 Alpha/Beta versions and are recommended to start with a fresh library if initial upgrade fails.
-- VFX: New shadergraph support directly on Universal target.
 
 ### Fixed
 - Fixed an issue in PostProcessPass causing OnGUI draws to not show on screen. [case 1346650]
@@ -131,8 +124,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed an issue where Particle Lit shader had an incorrect fallback shader [case 1312459]
 - Fixed an issue with backbuffer MSAA on Vulkan desktop platforms.
 - Fixed shadow cascade blend culling factor.
-- Fixed remove of the Additional Light Data when removing the Light Component.
-- Fixed remove of the Additional Camera Data when removing the Camera Component.
 - Fixed shadowCoord error when main light shadow defined in unlit shader graph [case 1175274](https://issuetracker.unity3d.com/issues/shadows-not-applying-when-using-file-in-a-custom-function-node-with-universal-rp)
 - Removed Custom.meta which was causing warnings. [case 1314288](https://issuetracker.unity3d.com/issues/urp-warnings-about-missing-metadata-appear-after-installing)
 - Fixed a case where shadow fade was clipped too early.
@@ -178,6 +169,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed unlit shader function name ambiguity
 - Fixed Terrain holes not appearing in shadows [case 1349305]
 - VFX: Compilation issue with ShaderGraph and planar lit outputs [case 1349894](https://issuetracker.unity3d.com/product/unity/issues/guid/1349894/)
+- Fixed an issue where _AfterPostProcessTexture was no longer being assigned in UniversalRenderer.
 - Fixed an issue where TerrainLit was rendering color lighter than Lit [case 1340751] (https://issuetracker.unity3d.com/product/unity/issues/guid/1340751/)
 - Fixed Camera rendering when capture action and post processing present. [case 1350313]
 - Fixed artifacts in Speed Tree 8 billboard LODs due to SpeedTree LOD smoothing/crossfading [case 1348407]
@@ -185,9 +177,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Support undo of URP Global Settings asset assignation (case 1342987).
 - Removed unsupported fields from Presets of Light and Camera [case 1335979].
 - Fixed graphical artefact when terrain height map is used with rendering layer mask for lighting.
-- Fixed an issue where _AfterPostProcessTexture was no longer being assigned in UniversalRenderer.
-- Fixed UniversalRenderPipelineAsset now being able to use multiedit
-- Fixed memory leak with XR combined occlusion meshes. [case 1366173]
 
 ### Changed
 - Change Asset/Create/Shader/Universal Render Pipeline/Lit Shader Graph to Asset/Create/Shader Graph/URP/Lit Shader Graph
