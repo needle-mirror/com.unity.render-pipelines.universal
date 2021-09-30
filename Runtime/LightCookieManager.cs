@@ -93,7 +93,7 @@ namespace UnityEngine.Rendering.Universal
                 }
 
                 Assertions.Assert.IsTrue((uint)start < data.Length);
-                Assertions.Assert.IsTrue((uint)end   < data.Length); // end == inclusive
+                Assertions.Assert.IsTrue((uint)end < data.Length); // end == inclusive
 
                 if (start < end)
                 {
@@ -340,7 +340,7 @@ namespace UnityEngine.Rendering.Universal
         /// Must match light data layout.
         private class LightCookieShaderData : IDisposable
         {
-            int  m_Size = 0;
+            int m_Size = 0;
             bool m_UseStructuredBuffer;
 
             // Shader data CPU arrays, used to upload the data to GPU
@@ -354,10 +354,10 @@ namespace UnityEngine.Rendering.Universal
             ComputeBuffer m_AtlasUVRectBuffer;
             ComputeBuffer m_LightTypeBuffer;
 
-            public Matrix4x4[] worldToLights  => m_WorldToLightCpuData;
-            public ShaderBitArray cookieEnableBits  => m_CookieEnableBitsCpuData;
-            public Vector4[] atlasUVRects   => m_AtlasUVRectCpuData;
-            public float[] lightTypes     => m_LightTypeCpuData;
+            public Matrix4x4[] worldToLights => m_WorldToLightCpuData;
+            public ShaderBitArray cookieEnableBits => m_CookieEnableBitsCpuData;
+            public Vector4[] atlasUVRects => m_AtlasUVRectCpuData;
+            public float[] lightTypes => m_LightTypeCpuData;
 
             public bool isUploaded { get; set; }
 
@@ -451,7 +451,7 @@ namespace UnityEngine.Rendering.Universal
 
         // Parameters for rescaling cookies to fit into the atlas.
         const int k_MaxCookieSizeDivisor = 16;
-        int  m_CookieSizeDivisor = 1;
+        int m_CookieSizeDivisor = 1;
         uint m_PrevCookieRequestPixelCount = 0xFFFFFFFF;
 
         internal bool IsKeywordLightCookieEnabled { get; private set; }
@@ -613,7 +613,7 @@ namespace UnityEngine.Rendering.Universal
 
         private void GetLightUVScaleOffset(ref UniversalAdditionalLightData additionalLightData, ref Matrix4x4 uvTransform)
         {
-            Vector2 uvScale  = Vector2.one / additionalLightData.lightCookieSize;
+            Vector2 uvScale = Vector2.one / additionalLightData.lightCookieSize;
             Vector2 uvOffset = additionalLightData.lightCookieOffset;
 
             if (Mathf.Abs(uvScale.x) < half.MinValue)
@@ -691,7 +691,7 @@ namespace UnityEngine.Rendering.Universal
 
                 LightCookieMapping lp;
                 lp.visibleLightIndex = (ushort)i;
-                lp.lightBufferIndex  = (ushort)(i + lightBufferOffset);
+                lp.lightBufferIndex = (ushort)(i + lightBufferOffset);
                 lp.light = light;
 
                 validLightMappings[validLightCount++] = lp;

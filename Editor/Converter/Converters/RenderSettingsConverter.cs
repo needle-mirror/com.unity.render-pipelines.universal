@@ -92,7 +92,7 @@ namespace UnityEditor.Rendering.Universal.Converters
                 m_SettingsItems.Add(projectSettings);
 
                 var setting = QualitySettings.GetRenderPipelineAssetAt(id);
-                var item = new ConverterItemDescriptor {name = $"Quality Level {id}: {levelName}"};
+                var item = new ConverterItemDescriptor { name = $"Quality Level {id}: {levelName}" };
 
                 if (setting != null)
                 {

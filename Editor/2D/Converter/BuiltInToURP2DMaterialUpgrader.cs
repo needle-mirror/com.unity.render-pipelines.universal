@@ -21,8 +21,8 @@ namespace UnityEditor.Rendering.Universal
         Material m_SpritesDefaultMat;
         Material m_SpritesMaskMat;
         Material m_SpriteMaskDefaultMat;
-        Shader   m_SpriteLitDefaultShader;
-        Shader   m_SpritesDefaultShader;
+        Shader m_SpriteLitDefaultShader;
+        Shader m_SpritesDefaultShader;
 
         string m_SpritesDefaultShaderId;
         string m_SpritesDefaultMatId;
