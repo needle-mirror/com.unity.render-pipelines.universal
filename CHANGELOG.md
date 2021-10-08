@@ -4,6 +4,15 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [12.1.0] - 2021-09-23
+
+### Changed
+- URP will no longer render via an intermediate texture unless actively required by a Renderer Feature. See the upgrade guide for compatibility options and how assets are upgraded.
+
+### Fixed
+- Fixed a Universal Targets in ShaderGraph not rendering correctly in game view [1352225]
+- MaterialReimporter.ReimportAllMaterials and MaterialReimporter.ReimportAllHDShaderGraphs now batch the asset database changes to improve performance.
+
 ## [12.0.0] - 2021-01-11
 ### Added
 - Added support for default sprite mask shaders for the 2D Renderer in URP.
