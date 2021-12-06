@@ -4,10 +4,17 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [10.8.1] - 2021-12-06
+## [Unreleased]
 
-Version Updated
-The version number for this package has increased due to a version update of a related graphics package.
+### Fixed
+- Fixed an issue where ShadowCaster2Ds were sometimes being rendered twice in the editor while in playmode.
+- Fixed SSAO to work in VR mode. Normal buffer stores normals in world space.
+
+## [10.9.0] - 2021-12-06
+
+### Fixed
+- Fixed a 2D Renderer issue with volumetric lights sometimes not showing. [case 1329119]
+- Fixed an issue with Shader Graph Lit shaders where the "additional lights" keywords could be applied erroneously. [case 1387281]
 
 ## [10.8.0] - 2021-09-20
 
@@ -22,6 +29,7 @@ The version number for this package has increased due to a version update of a r
 - Fixed ShaderGraph needing updated normals for ShadowCaster in URP.
 - Fixed memory leak with XR combined occlusion meshes. [case 1366173]
 - Fixed an issue with MSAA falling back to the incorrect value when sample count 2 is not supported on some Android GPUs.
+- Fixed depth of field pass usage on unsupported devices. [case 1327076]
 
 ## [10.7.0] - 2021-07-02
 
