@@ -4,12 +4,27 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [10.10.1] - 2022-08-29
+
+### Fixed
+- Fixed lighting banding issue on mobile platforms.
+- Fixed multi_compile_instancing on SimpleLit shader on SM 2.0.
+- The behavior of setting a camera's Background Type to "Dont Care" has changed on mobile. Previously, "Dont Care" would behave identically to "Solid Color" on mobile. Now, "Dont Care" corresponds to the render target being filled with arbitrary data at the beginning of the frame, which may be faster in some situations. Note that there are no guarantees for the exact content of the render target, so projects should use "Dont care" only if they are guaranteed to render to, or otherwise write every pixel every frame.
+- Fixed URP Deferred Fog pass does not work in XR singlepass.
+
+### Changed
+- Added serialization of Freeform ShapeLight mesh to avoid CPU cost of generating them on the runtime.
+
 ## [10.10.0] - 2022-06-28
 
 ### Fixed
 - Fixed an issue where ShadowCaster2Ds were sometimes being rendered twice in the editor while in playmode.
 - Fixed SSAO to work in VR mode. Normal buffer stores normals in world space.
 - Fixed an issue in where the _ScreenParams is not setup correctly.
+- Fixed lighting banding issue on mobile platforms.
+- Added multi_compile_instancing to SimpleLit shader on SM 2.0.
+- Fixed motion blur for multiple cameras.
+- Fixed the fix button for incorrect vertex steam in paticle shaders.
 
 ## [10.9.0] - 2021-12-06
 
